@@ -26,6 +26,17 @@ FORWARD_HEAD_THRESHOLD = 0.05  # normalized distance
 #         return "BAD"
 #     return "GOOD"
 
+
+
+mp_drawing = mp.solutions.drawing_utils
+def draw_points(frame, landmarks, idxs, radius=6):
+    h, w = frame.shape[:2]
+    for i in idxs:
+        lm = landmarks[i]
+        cx, cy = int(lm.x * w), int(lm.y * h)
+        cv2.circle(frame, (cx, cy), radius, (0, 255, 0), -1)
+
+
 from collections import deque
 
 scores = deque(maxlen=10)
@@ -125,6 +136,7 @@ def main():
     last_alert_time = 0
     ALERT_AFTER = 5
     ALERT_COOLDOWN = 30
+    
 
     while True:
         ret, frame = cap.read()
@@ -137,6 +149,11 @@ def main():
         posture_label = "NO PERSON"
 
         if results.pose_landmarks:
+            mp_drawing.draw_landmarks(
+                frame,
+                results.pose_landmarks,
+                mp_pose.POSE_CONNECTIONS
+            )
             m = posture_metrics(results.pose_landmarks.landmark)
             if m is not None:
                 dx, dz = m
