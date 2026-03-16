@@ -247,6 +247,19 @@ input:checked + .slider:before {
   background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
 }
 
+.posture-label {
+  font-weight: bold;
+  margin-top: 6px;
+}
+
+.posture-label.good {
+  color: #2ecc71;
+}
+
+.posture-label.bad {
+  color: #e74c3c;
+}
+
 .placeholder-silhouette {
   width: 120px;
   height: 180px;
@@ -321,3 +334,4 @@ input:checked + .slider:before {
     grid-template-columns: 1fr;
   }
 }
+
