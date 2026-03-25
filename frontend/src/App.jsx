@@ -2,7 +2,6 @@ import { useState } from 'react';
 import './App.css';
 import Home from './components/Home';
 import StatsDash from './components/StatsDash';
-import Profile from './components/Profile';
 import Settings from './components/Settings';
 
 function App() {
@@ -14,8 +13,6 @@ function App() {
         return <Home />;
       case 'stats':
         return <StatsDash />;
-      case 'profile':
-        return <Profile />;
       case 'settings':
         return <Settings />;
       default:
@@ -45,16 +42,10 @@ function App() {
             <span className="nav-icon">📊</span> Stats Dash
           </button>
           <button 
-            className={`nav-item ${activeNav === 'profile' ? 'active' : ''}`}
-            onClick={() => setActiveNav('profile')}
-          >
-            <span className="nav-icon">👤</span> Profile
-          </button>
-          <button 
             className={`nav-item ${activeNav === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveNav('settings')}
           >
-            <span className="nav-icon">⚙️</span> Settings
+            <span className="nav-icon">👤</span> Settings
           </button>
         </nav>
         <div className="sidebar-footer">v1.0.0 Prototype</div>
