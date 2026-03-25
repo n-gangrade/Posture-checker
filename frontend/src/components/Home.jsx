@@ -84,7 +84,7 @@ function Home() {
   useEffect(() => {
     if (cameraOn) {
       startCamera().then(() => {
-        intervalRef.current = setInterval(captureAndSendFrame, 1000);
+        intervalRef.current = setInterval(captureAndSendFrame, 200);
       });
     } else {
       stopCamera();
