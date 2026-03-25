@@ -15,13 +15,13 @@ From the project root:
 
 From the project root:
 
-- `python backend/capstone.py`
+- `uvicorn backend.capstoneStat:app --reload`
+
+From /frontend
+- `npm install`
+- `npm run dev`
 
 Press `q` in the OpenCV window to quit.
-
-
-Here is a clean README you can paste into README.md for your Posture Checker project.
-It explains how to run both the backend and frontend, which matches the code you showed (FastAPI + React + Vite).
 
 ⸻
 
