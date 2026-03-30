@@ -29,7 +29,7 @@ pip install pyinstaller
 
 ---
 
-### 3. Install frontend & Electron dependencies
+### 3. Install frontend & Electron dependencies in Project Root
 
 ```powershell
 cd ..
