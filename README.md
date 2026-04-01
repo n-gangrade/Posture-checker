@@ -20,6 +20,8 @@ This project runs the Posture Checker as a desktop application using:
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+for mac
+source .venv/bin/activate
 ```
 
 ---
