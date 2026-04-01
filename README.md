@@ -8,7 +8,11 @@ This project runs the Posture Checker as a desktop application using:
 
 ---
 
-## 🚀 Setup & Run (First Time)
+# 🚀 Setup & Run (First Time)
+
+---
+
+## 🪟 Windows Setup
 
 ### 1. Create and activate Python virtual environment
 
@@ -29,7 +33,7 @@ pip install pyinstaller
 
 ---
 
-### 3. Install frontend & Electron dependencies in Project Root
+### 3. Install frontend & Electron dependencies
 
 ```powershell
 cd ..
@@ -46,10 +50,49 @@ npm start
 
 ---
 
-## 🔁 Running again later
+## 🍎 Mac Setup
 
-Every time you open a new terminal:
+### 1. Create and activate Python virtual environment
 
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+---
+
+### 2. Install backend dependencies
+
+```bash
+pip install -r requirements.txt
+pip install pyinstaller
+```
+
+> If `pip` doesn’t work, try `pip3`
+
+---
+
+### 3. Install frontend & Electron dependencies
+
+```bash
+cd ..
+npm run install-all
+```
+
+---
+
+### 4. Run the app
+
+```bash
+npm start
+```
+
+---
+
+# 🔁 Running Again Later
+
+## 🪟 Windows
 ```powershell
 cd backend
 .\.venv\Scripts\Activate.ps1
@@ -57,19 +100,37 @@ cd ..
 npm start
 ```
 
+## 🍎 Mac
+```bash
+cd backend
+source .venv/bin/activate
+cd ..
+npm start
+```
+
 ---
 
-## 📦 Build Installer (Optional)
+# 📦 Build Installer (Optional)
 
+## 🪟 Windows
 ```powershell
 npm run dist
 ```
 
-> If this fails on Windows with a permissions error, run PowerShell as Administrator and try again.
+> If this fails, run PowerShell as Administrator.
 
 ---
 
-## 📁 Project Structure
+## 🍎 Mac
+```bash
+npm run dist
+```
+
+> You may need to allow the app in **System Settings → Privacy & Security**
+
+---
+
+# 📁 Project Structure
 
 ```
 Posture-checker/
@@ -90,33 +151,37 @@ Posture-checker/
 
 ---
 
-## 🛠 Troubleshooting
+# 🛠 Troubleshooting
+
+---
 
 ### ❌ "No module named PyInstaller"
-Make sure the virtual environment is activated:
 
+#### Windows
 ```powershell
 cd backend
 .\.venv\Scripts\Activate.ps1
+pip install pyinstaller
 ```
 
-Then install:
-
-```powershell
+#### Mac
+```bash
+cd backend
+source .venv/bin/activate
 pip install pyinstaller
 ```
 
 ---
 
 ### ❌ Blank Electron window
-- Make sure `frontend/dist` exists  
-- Make sure files were copied to `electron/out`
+- Ensure `frontend/dist` exists  
+- Ensure files were copied to `electron/out`
 
 ---
 
-### ❌ Build errors
-Try a clean rebuild:
+### ❌ Build errors (clean rebuild)
 
+#### Windows
 ```powershell
 Remove-Item backend\dist -Recurse -Force
 Remove-Item frontend\dist -Recurse -Force
@@ -125,10 +190,20 @@ Remove-Item electron\out -Recurse -Force
 npm start
 ```
 
+#### Mac
+```bash
+rm -rf backend/dist
+rm -rf frontend/dist
+rm -rf electron/out
+
+npm start
+```
+
 ---
 
-## ✅ Summary
+# ✅ Quick Start Summary
 
+## 🪟 Windows
 ```powershell
 cd backend
 python -m venv .venv
@@ -143,7 +218,22 @@ npm start
 
 ---
 
-## 📌 Notes
+## 🍎 Mac
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install pyinstaller
+
+cd ..
+npm run install-all
+npm start
+```
+
+---
+
+# 📌 Notes
 
 - Do NOT commit:
   - `node_modules/`
