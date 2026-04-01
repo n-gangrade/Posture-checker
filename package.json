@@ -6,7 +6,7 @@
     "install-all": "cd frontend && npm install && cd ..\\electron && npm install",
     "build-backend": "cd backend && python -m PyInstaller --onefile --collect-all mediapipe --collect-all cv2 capstoneStat.py",
     "build-frontend": "cd frontend && npm run build",
-    "copy-frontend": "xcopy frontend\\dist electron\\out /E /I /Y",
+    "copy-frontend": "cp -r frontend/dist electron/out",
     "start": "npm run build-backend && npm run build-frontend && npm run copy-frontend && cd electron && npm start",
     "dist": "npm run build-backend && npm run build-frontend && npm run copy-frontend && cd electron && npm run dist"
   }
