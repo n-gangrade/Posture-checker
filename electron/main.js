@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, session } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 
@@ -28,7 +28,16 @@ function createWindow() {
   }, 4000);
 }
 
+
+
 app.whenReady().then(() => {
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    if (permission === 'media') {
+      callback(true)
+    } else {
+      callback(false)
+    }
+  })
   startBackend();
   createWindow();
 });
