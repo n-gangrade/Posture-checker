@@ -17,9 +17,12 @@ htmlcov/
 venv/
 env/
 ENV/
+backend/.venv/
 
 # --- Node / Frontend ---
 node_modules/
+frontend/node_modules/
+electron/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -31,10 +34,20 @@ dist/
 .next/
 out/
 coverage/
+electron/dist/
+frontend/dist/
+
+# Backend build artifacts
+backend/build/
+backend/dist/
+*.spec
 
 # --- Env files ---
 .env
 .env.*
+
+# --- Logs ---
+*.log
 
 # --- IDE / OS ---
 .vscode/
