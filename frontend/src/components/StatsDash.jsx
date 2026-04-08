@@ -38,6 +38,12 @@ function StatsDash() {
           <h2>Most Common Issue</h2>
           {/* Placeholder for a text or chart showing the most common posture issue */}
         </div>
+        {/* score over a session*, posture score over time, avg posture score, adjust the time range */} 
+        {/* text file: user id, username, posture data w/ timestamps */}
+        {/* export button to download the data as a CSV or JSON file */}
+        { /* limit time range to 30 days */}
+        { /* all the user crap is kind of irrelevant, no one cares about device type height etc, just the posture data and timestamps */}
+        {/* create profile button & change profile using a dropdown / pop up. */}
       </div>
     </div>
   );
