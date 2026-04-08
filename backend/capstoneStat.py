@@ -12,9 +12,11 @@ import numpy as np
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import pathlib
 
 # ── Download model if missing ──────────────────────────────────────────────────
-MODEL_PATH = "pose_landmarker_lite.task"
+MODEL_PATH = str(pathlib.Path.home() / "posture_checker_model" / "pose_landmarker_lite.task")
+os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
 MODEL_URL  = (
     "https://storage.googleapis.com/mediapipe-models/"
     "pose_landmarker/pose_landmarker_lite/float16/latest/"
@@ -304,3 +306,7 @@ def analyze_frame(payload: FrameRequest):
         "low_conf_frames": current_session["low_conf_frames"],
         "no_person_frames": current_session["no_person_frames"],
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)

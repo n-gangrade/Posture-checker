@@ -1,0 +1,22 @@
+{
+  "name": "posture-checker",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.posturechecker.app",
+    "files": ["main.js", "out/**/*"],
+    "win": { "target": "nsis" },
+    "mac": { "target": "dmg" },
+    "extraResources": [
+      { "from": "../backend/dist/", "to": "bin/", "filter": ["**/*"] }
+    ]
+  }
+}

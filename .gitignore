@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+frontend/node_modules/
+electron/node_modules/
+
+# builds
+dist/
+out/
+electron/dist/
+frontend/dist/
+
+# backend builds
+backend/build/
+backend/dist/
+*.spec
+
+# misc
+.env
+*.log
+
+.venv/
+backend/.venv/

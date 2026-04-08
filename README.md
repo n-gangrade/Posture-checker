@@ -1,195 +1,245 @@
-# Posture-checker
+# Posture Checker Desktop App
 
-## Backend setup (Windows)
+This project runs the Posture Checker as a desktop application using:
+- Python (FastAPI backend)
+- Vite (frontend)
+- Electron (desktop wrapper)
+- PyInstaller (bundles backend)
 
-From the project root:
+---
 
-1. Create a virtual environment (if you do not already have one):
-	- `py -m venv .venv`
-2. Activate it:
-	- `.\.venv\Scripts\Activate.ps1`
-3. Install dependencies:
-	- `python -m pip install -r backend/requirements.txt`
+# 🚀 Setup & Run (First Time)
 
-## Run posture checker
+---
 
-From the project root:
+## 🪟 Windows Setup
 
-- `uvicorn backend.capstoneStat:app --reload`
+### 1. Create and activate Python virtual environment
 
-From /frontend
-- `npm install`
-- `npm run dev`
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+//for mac
+source .venv/bin/activate
+```
 
-Press `q` in the OpenCV window to quit.
+---
 
-⸻
+### 2. Install backend dependencies
 
-Posture Checker
+```powershell
+pip install -r requirements.txt
+pip install pyinstaller
+```
 
-A real-time posture monitoring web application that uses MediaPipe Pose detection to analyze posture from a webcam feed.
-The system consists of:
-	•	Frontend: React + Vite (camera UI and dashboard)
-	•	Backend: FastAPI + OpenCV + MediaPipe (posture analysis)
+---
 
-The frontend captures webcam frames and sends them to the backend for posture analysis.
+### 3. Install frontend & Electron dependencies
 
-⸻
+```powershell
+cd ..
+npm run install-all
+```
 
-Project Structure
+---
 
-posture_project
-│
-├── Backend
+### 4. Run the app
+
+```powershell
+npm start
+```
+
+---
+
+## 🍎 Mac Setup
+
+### 1. Create and activate Python virtual environment
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+---
+
+### 2. Install backend dependencies
+
+```bash
+pip install -r requirements.txt
+pip install pyinstaller
+```
+
+> If `pip` doesn’t work, try `pip3`
+
+---
+
+### 3. Install frontend & Electron dependencies
+
+```bash
+cd ..
+npm run install-all
+```
+
+---
+
+### 4. Run the app
+
+```bash
+npm start
+```
+
+---
+
+# 🔁 Running Again Later
+
+## 🪟 Windows
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+cd ..
+npm start
+```
+
+## 🍎 Mac
+```bash
+cd backend
+source .venv/bin/activate
+cd ..
+npm start
+```
+
+---
+
+# 📦 Build Installer (Optional)
+
+## 🪟 Windows
+```powershell
+npm run dist
+```
+
+> If this fails, run PowerShell as Administrator.
+
+---
+
+## 🍎 Mac
+```bash
+npm run dist
+```
+
+> You may need to allow the app in **System Settings → Privacy & Security**
+
+---
+
+# 📁 Project Structure
+
+```
+Posture-checker/
+├── backend/
 │   ├── capstoneStat.py
-│   └── requirements.txt
-│
-├── Posture-checker
-│   ├── src
+│   ├── requirements.txt
+│   └── .venv/ (created locally)
+├── frontend/
+│   ├── src/
+│   └── dist/ (generated)
+├── electron/
+│   ├── main.js
 │   ├── package.json
-│   └── vite.config.js
-│
-└── README.md
-
-
-⸻
-
-Requirements
-
-Install the following:
-
-Node.js
-
-Version 20.19+
-
-Check version:
-
-node -v
-
-
-⸻
-
-Python
-
-Python 3.10 – 3.12
-
-Check version:
-
-python3 --version
-
-
-⸻
-
-Backend Setup (FastAPI)
-
-1. Navigate to backend
-
-cd Backend
-
-
-⸻
-
-2. Create virtual environment
-
-python3 -m venv venv
-
-Activate it:
-
-Mac / Linux
-
-source venv/bin/activate
-
-Windows
-
-venv\Scripts\activate
-
-
-⸻
-
-3. Install dependencies
-
-pip install fastapi uvicorn opencv-python mediapipe numpy
-
-Optional:
-
-pip install python-multipart
-
-
-⸻
-
-4. Run backend
-
-uvicorn capstoneStat:app --reload
-
-Server should start at:
-
-http://localhost:8000
-
-Test it in browser:
-
-http://localhost:8000
-
-Expected response:
-
-{"message":"Posture backend is running"}
-
-
-⸻
-
-Frontend Setup (React + Vite)
-
-1. Navigate to frontend
-
-cd Posture-checker
-
-
-⸻
-
-2. Install dependencies
-
-npm install
-
-
-⸻
-
-3. Run development server
-
-npm run dev
-
-You should see something like:
-
-Local: http://localhost:5173
-
-Open it in your browser.
-
-⸻
-
-How It Works
-	1.	User turns camera ON in the UI.
-	2.	The browser captures frames from the webcam.
-	3.	Frames are sent to the backend API:
-
-POST /analyze-frame
-
-	4.	Backend runs MediaPipe Pose detection.
-	5.	Posture is classified as:
-
-GOOD
-BAD
-CALIBRATING
-NO PERSON
-LOW CONF
-
-
-Calibration
-
-When a session starts, the system performs automatic posture calibration.
-
-The user should:
-	1.	Sit upright
-	2.	Keep shoulders visible
-	3.	Face the camera
-
-Calibration takes about 30 frames (~2–3 seconds).
-
-
+│   └── out/ (generated)
+├── package.json (root scripts)
+└── .gitignore
+```
+
+---
+
+# 🛠 Troubleshooting
+
+---
+
+### ❌ "No module named PyInstaller"
+
+#### Windows
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+pip install pyinstaller
+```
+
+#### Mac
+```bash
+cd backend
+source .venv/bin/activate
+pip install pyinstaller
+```
+
+---
+
+### ❌ Blank Electron window
+- Ensure `frontend/dist` exists  
+- Ensure files were copied to `electron/out`
+
+---
+
+### ❌ Build errors (clean rebuild)
+
+#### Windows
+```powershell
+Remove-Item backend\dist -Recurse -Force
+Remove-Item frontend\dist -Recurse -Force
+Remove-Item electron\out -Recurse -Force
+
+npm start
+```
+
+#### Mac
+```bash
+rm -rf backend/dist
+rm -rf frontend/dist
+rm -rf electron/out
+
+npm start
+```
+
+---
+
+# ✅ Quick Start Summary
+
+## 🪟 Windows
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+pip install pyinstaller
+
+cd ..
+npm run install-all
+npm start
+```
+
+---
+
+## 🍎 Mac
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install pyinstaller
+
+cd ..
+npm run install-all
+npm start
+```
+
+---
+
+# 📌 Notes
+
+- Do NOT commit:
+  - `node_modules/`
+  - `backend/dist/`
+  - `frontend/dist/`
+  - `electron/out/`
+- These are generated automatically when running the app.

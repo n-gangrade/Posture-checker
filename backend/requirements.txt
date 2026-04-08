@@ -1,5 +1,7 @@
+﻿fastapi
+uvicorn
 mediapipe==0.10.32
 opencv-python==4.13.0.92
+opencv-contrib-python
 numpy==2.4.3
-fastapi
-uvicorn
+pydantic
