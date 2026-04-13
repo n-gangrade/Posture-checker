@@ -36,7 +36,40 @@ function createWindow() {
 }
 
 ipcMain.on('send-notification', (event, { title, body }) => {
-  new Notification({ title, body }).show();
+  const notify = new BrowserWindow({
+    width: 320,
+    height: 75,
+    x: 20,
+    y: 20,
+    frame: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+    },
+  });
+
+  notify.loadFile(path.join(__dirname, 'notification.html'));
+
+  // Pass the message data to the window once it loads
+  notify.webContents.on('did-finish-load', () => {
+    notify.webContents.send('notification-data', { title, body });
+  });
+
+  // Auto close after 5 seconds
+  setTimeout(() => {
+    if (!notify.isDestroyed()) notify.close();
+  }, 5000);
+});
+
+ipcMain.on('focus-main-window', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
 });
 
 app.whenReady().then(() => {

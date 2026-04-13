@@ -134,7 +134,12 @@ function Home() {
 }, [postureLabel, duration]);
 
   const handleTestAlert = () => {
-    alert('Test Alert: Check your posture!');
+    if (window.electronAPI) {
+      window.electronAPI.sendNotification({
+        title: 'Posture Alert',
+        body: 'This is a test alert. Check your posture!',
+      });
+    }
   };
 
   return (
