@@ -31,21 +31,23 @@ function App() {
         <nav className="sidebar-nav">
           <button 
             className={`nav-item ${activeNav === 'home' ? 'active' : ''}`}
-            onClick={() => setActiveNav('home')}
-          >
-            <span className="nav-icon">🏠</span> Home
+            onClick={() => setActiveNav('home')}>
+            <img className="nav-icon nav-icon-image" src="/house_icon.png" alt="Home" />
+            Home
           </button>
+
           <button 
             className={`nav-item ${activeNav === 'stats' ? 'active' : ''}`}
-            onClick={() => setActiveNav('stats')}
-          >
-            <span className="nav-icon">📊</span> Stats Dash
+            onClick={() => setActiveNav('stats')}>
+            <img className="nav-icon nav-icon-image" src="/stats_icon.png" alt="Statistics" />
+            Statistics
           </button>
+
           <button 
             className={`nav-item ${activeNav === 'settings' ? 'active' : ''}`}
-            onClick={() => setActiveNav('settings')}
-          >
-            <span className="nav-icon">👤</span> Settings
+            onClick={() => setActiveNav('settings')}>
+              <img className="nav-icon nav-icon-image" src="/settings_icon.png" alt="Settings" />
+            Settings
           </button>
         </nav>
         <div className="sidebar-footer">v1.0.0 Prototype</div>
