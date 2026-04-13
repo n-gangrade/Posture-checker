@@ -75,6 +75,14 @@
   border-radius: 50%;
 }
 
+.slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 10px;
+  color: #999;
+}
+
 input:checked + .slider {
   background-color: #ff1493;
 }

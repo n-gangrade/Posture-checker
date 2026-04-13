@@ -3,12 +3,20 @@ import './Home.css';
 
 const API_BASE = 'http://localhost:8000';
 
+const durationOptions = [5/60, 10/60, 20/60, 0.5, 1, 2, 3, 4, 5];
+const formatDuration = (val) => {
+  if (val === 5/60) return '5 seconds';
+  if (val === 10/60) return '10 seconds';
+  if (val === 20/60) return '20 seconds';
+  if (val === 0.5) return '30 seconds';
+  return `${val} min`;
+};
 
 function Home() {
   const [cameraOn, setCameraOn] = useState(false);
   const [heightAdjust, setHeightAdjust] = useState(50);
   const [warningType, setWarningType] = useState('banner');
-  const [duration, setDuration] = useState(3);
+  const [duration, setDuration] = useState(1);
   const [showDurationHelp, setShowDurationHelp] = useState(false);
   const [postureScore, setPostureScore] = useState(78);
   const [sessionTime, setSessionTime] = useState('2h 34m');
@@ -18,6 +26,7 @@ function Home() {
 
   const videoRef = useRef(null);
   const intervalRef = useRef(null);
+  const badPostureTimer = useRef(null);
 
   const startCamera = async () => {
     try {
@@ -82,6 +91,22 @@ function Home() {
       console.error('Error sending frame:', err);
     }
   };
+
+  const playAlertSound = () => {
+  const audio = new Audio('/alert.mp3');
+  audio.play();
+};
+
+  const sendPostureAlert = () => {
+  if (window.electronAPI) {
+    window.electronAPI.sendNotification({
+      title: 'Posture Alert',
+      body: 'You\'ve had bad posture for ' + formatDuration(durationOptions[duration]) + '. Time to straighten up!',
+    });
+  }
+  playAlertSound();
+};
+
   useEffect(() => {
     if (cameraOn) {
       startCamera().then(() => {
@@ -94,8 +119,27 @@ function Home() {
     return () => stopCamera();
   }, [cameraOn]);
 
+  useEffect(() => {
+  if (postureLabel === 'BAD') {
+    if (!badPostureTimer.current) {
+      badPostureTimer.current = setTimeout(() => {
+        sendPostureAlert();
+        badPostureTimer.current = null;
+      }, durationOptions[duration] * 60 * 1000);
+    }
+  } else {
+    clearTimeout(badPostureTimer.current);
+    badPostureTimer.current = null;
+  }
+}, [postureLabel, duration]);
+
   const handleTestAlert = () => {
-    alert('Test Alert: Check your posture!');
+    if (window.electronAPI) {
+      window.electronAPI.sendNotification({
+        title: 'Posture Alert',
+        body: 'This is a test alert. Check your posture!',
+      });
+    }
   };
 
   return (
@@ -154,7 +198,9 @@ function Home() {
             </div>
             <div className="setting-group">
               <div className="setting-label-row">
-                <label className="setting-label">Alert me after this time: {duration} minutes</label>
+                <label className="setting-label">
+                  Alert me after this time: {formatDuration(durationOptions[duration])}
+                </label>
                 <button
                   type="button"
                   className="info-icon-btn"
@@ -168,8 +214,9 @@ function Home() {
               </div>
               <input
                 type="range"
-                min="1"
-                max="30"
+                min="0"
+                max="8"
+                step="1"
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
                 className="slider-input"
@@ -177,7 +224,7 @@ function Home() {
               {showDurationHelp && (
                 <div className="help-dropdown" id="duration-help">
                   <p>
-                    Choose how long you want to maintain bad posture before receiving an alert. 
+                    Choose how long you want to maintain bad posture before receiving an alert.
                     Adjust this based on your preferences and how frequently you want to be reminded to correct your posture.
                   </p>
                   <button
