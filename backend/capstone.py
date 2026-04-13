@@ -2,6 +2,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import time
+import platform
 
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
@@ -105,10 +106,15 @@ def calibrate_baseline(cap, seconds=5, fps_assumed=30):
 from collections import deque
 
 def main():
-    cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
+    if platform.system() == "Darwin":
+        cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
+    else:
+        cap = cv2.VideoCapture(0)
 
     if not cap.isOpened():
-        raise RuntimeError("Could not open webcam. Check macOS Camera permissions for Terminal/VS Code.")
+        raise RuntimeError(
+            "Could not open webcam. Check camera permissions for your Python process and ensure no other app is using it."
+        )
 
     baseline = calibrate_baseline(cap, seconds=5)
 
