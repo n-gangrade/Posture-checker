@@ -1,8 +1,12 @@
 import base64
+import csv
 import os
 import urllib.request
 import time
+import uuid
 from collections import deque
+from datetime import datetime, timezone
+from typing import Optional
 
 import cv2
 import mediapipe as mp
@@ -59,6 +63,8 @@ app.add_middleware(
 current_session = {
     "running": False,
     "start_time": None,
+    "username": "anonymous",
+    "session_id": None,
     "good_frames": 0,
     "bad_frames": 0,
     "low_conf_frames": 0,
@@ -80,6 +86,51 @@ session_history = []
 # -----------------------------
 class FrameRequest(BaseModel):
     image: str  # base64 image string
+
+
+class StartSessionRequest(BaseModel):
+    username: Optional[str] = None
+
+
+# -----------------------------
+# LOCAL CSV PERSISTENCE
+# -----------------------------
+SESSION_CSV_PATH = pathlib.Path(__file__).resolve().parent / "session_stats.csv"
+SESSION_CSV_HEADERS = [
+    "timestamp",
+    "username",
+    "session_start",
+    "session_end",
+    "posture_score",
+    "alert_count",
+    "session_id",
+    "session_duration_seconds",
+]
+
+
+def get_session_duration_seconds(start_time, end_time=None):
+    if not start_time:
+        return 0
+    if end_time is None:
+        end_time = time.time()
+    return max(0, int(end_time - start_time))
+
+
+def append_session_to_csv(row):
+    SESSION_CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
+    should_write_header = (
+        not SESSION_CSV_PATH.exists() or SESSION_CSV_PATH.stat().st_size == 0
+    )
+
+    try:
+        with open(SESSION_CSV_PATH, "a", newline="", encoding="utf-8") as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=SESSION_CSV_HEADERS)
+            if should_write_header:
+                writer.writeheader()
+            writer.writerow(row)
+        return True, None
+    except OSError as exc:
+        return False, str(exc)
 
 # -----------------------------
 # POSTURE LOGIC
@@ -154,9 +205,17 @@ def root():
     return {"message": "Posture backend is running"}
 
 @app.post("/start-session")
-def start_session():
+def start_session(payload: Optional[StartSessionRequest] = None):
+    username = "anonymous"
+    if payload and payload.username:
+        candidate = payload.username.strip()
+        if candidate:
+            username = candidate
+
     current_session["running"] = True
     current_session["start_time"] = time.time()
+    current_session["username"] = username
+    current_session["session_id"] = str(uuid.uuid4())
     current_session["good_frames"] = 0
     current_session["bad_frames"] = 0
     current_session["low_conf_frames"] = 0
@@ -169,28 +228,63 @@ def start_session():
     current_session["calibration_samples_dx"] = []
     current_session["calibration_samples_dz"] = []
     current_session["calibrating"] = True
-    return {"message": "Session started. Calibrating..."}
+    return {
+        "message": "Session started. Calibrating...",
+        "username": current_session["username"],
+        "session_id": current_session["session_id"],
+    }
 
 @app.post("/end-session")
 def end_session():
     if not current_session["running"]:
         return {"message": "No active session"}
 
+    end_time = time.time()
+    start_time = current_session["start_time"]
+    posture_score = compute_score(
+        current_session["good_frames"],
+        current_session["bad_frames"]
+    )
+    session_duration_seconds = get_session_duration_seconds(start_time, end_time)
+
+    session_start_iso = ""
+    if start_time:
+        session_start_iso = datetime.fromtimestamp(
+            start_time,
+            tz=timezone.utc
+        ).isoformat()
+    session_end_iso = datetime.fromtimestamp(end_time, tz=timezone.utc).isoformat()
+    timestamp_iso = datetime.now(timezone.utc).isoformat()
+
+    csv_row = {
+        "timestamp": timestamp_iso,
+        "username": current_session["username"],
+        "session_start": session_start_iso,
+        "session_end": session_end_iso,
+        "posture_score": posture_score,
+        "alert_count": current_session["alerts_today"],
+        "session_id": current_session["session_id"],
+        "session_duration_seconds": session_duration_seconds,
+    }
+    csv_saved, csv_error = append_session_to_csv(csv_row)
+
     result = {
         "session_time": get_session_time_string(current_session["start_time"]),
-        "posture_score": compute_score(
-            current_session["good_frames"],
-            current_session["bad_frames"]
-        ),
+        "posture_score": posture_score,
         "alerts_today": current_session["alerts_today"],
-        "avg_score": compute_score(
-            current_session["good_frames"],
-            current_session["bad_frames"]
-        ),
+        "avg_score": posture_score,
+        "username": current_session["username"],
+        "session_id": current_session["session_id"],
+        "session_duration_seconds": session_duration_seconds,
+        "csv_saved": csv_saved,
     }
+    if csv_error:
+        result["csv_error"] = csv_error
+
     session_history.append(result)
     current_session["running"] = False
     current_session["start_time"] = None
+    current_session["session_id"] = None
     return {"message": "Session ended", "summary": result}
 
 @app.get("/status")
