@@ -19,11 +19,7 @@ function StatsDash() {
           <option value="Past hour">Past Hour</option>
           <option value="Past Day">Past Day</option>
           <option value="Past 7 Days">Past 7 Days</option>
-          <option value="Past Month">Past Month</option>
-          <option value="Past 3 Months">Past 3 Months</option>
-          <option value="Past 6 Months">Past 6 Months</option>
-          <option value="Past Year">Past Year</option>
-          <option value="All time">All Time</option>
+          <option value="Past 30 Days">Past 30 Days</option>
         </select>
         <button className="export-button">Export Data</button>
         <div className="stats-section">
@@ -41,9 +37,6 @@ function StatsDash() {
         {/* score over a session*, posture score over time, avg posture score, adjust the time range */} 
         {/* text file: user id, username, posture data w/ timestamps */}
         {/* export button to download the data as a CSV or JSON file */}
-        { /* limit time range to 30 days */}
-        { /* all the user crap is kind of irrelevant, no one cares about device type height etc, just the posture data and timestamps */}
-        {/* create profile button & change profile using a dropdown / pop up. */}
       </div>
     </div>
   );
