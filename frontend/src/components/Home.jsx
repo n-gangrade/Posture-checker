@@ -118,28 +118,6 @@ function Home() {
       <div className="content-grid">
         <div className="left-column">
           <section className="card">
-            <h2 className="card-title">Camera Settings</h2>
-            <div className="setting-group">
-              <label className="setting-label">Select Camera</label>
-              <select className="select-input">
-                <option>Built-in Camera</option>
-                <option>External Camera</option>
-              </select>
-            </div>
-            <div className="setting-group">
-              <label className="setting-label">Adjust Height {heightAdjust}%</label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={heightAdjust}
-                onChange={(e) => setHeightAdjust(e.target.value)}
-                className="slider-input"
-              />
-            </div>
-          </section>
-
-          <section className="card">
             <h2 className="card-title">Warning Alert</h2>
             <div className="radio-group">
               <label className="radio-label">
