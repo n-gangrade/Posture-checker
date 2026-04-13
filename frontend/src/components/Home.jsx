@@ -101,7 +101,7 @@ function Home() {
   return (
     <div className="home-page">
       <header className="header">
-        <h1 className="header-title">Posture Checker</h1>
+        <h1 className="header-title">Home</h1>
         <div className="camera-toggle">
           <span className="toggle-label">Camera</span>
           <label className="switch">

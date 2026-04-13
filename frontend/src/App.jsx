@@ -25,8 +25,11 @@ function App() {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h1 className="sidebar-title">POSTURE</h1>
-          <h2 className="sidebar-subtitle">PROTECTOR</h2>
+          <img className="logo" height="100" src="posturelogo.png" alt="Logo" />
+          <div className="sidebar-heading">
+            <h1 className="sidebar-title">POSTURE</h1>
+            <h2 className="sidebar-subtitle">PROTECTOR</h2>
+          </div>
         </div>
         <nav className="sidebar-nav">
           <button 

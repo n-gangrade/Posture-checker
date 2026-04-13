@@ -74,7 +74,6 @@ function Settings() {
             <h3>Name:</h3><input type="text" value={profileData.name} onChange={(e) => setProfileData({...profileData, name: e.target.value})} />
             <h3>Email:</h3><input type="email" value={profileData.email} onChange={(e) => setProfileData({...profileData, email: e.target.value})} />
             <h3>Member Since: {profileData.memberSince}</h3>
-            <h3>Posture Score: {profileData.postureScore}</h3>
             <button className="logout-button" onClick={handleLogout}>Logout</button>
             <button onClick={() => alert("Add new profile here")}>Add Profile</button>
           </div>
