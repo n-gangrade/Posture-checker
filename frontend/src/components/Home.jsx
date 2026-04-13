@@ -191,7 +191,7 @@ function Home() {
               )}
             </div>
             <button className="test-alert-btn" onClick={handleTestAlert}>
-              <img className="nav-icon nav-icon-image" src="/notif_icon.png" alt="Test Alert" />
+              <img className="nav-icon nav-icon-image" src="notif_icon.png" alt="Stats" />
               Test Alert
             </button>
           </section>

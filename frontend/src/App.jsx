@@ -32,21 +32,21 @@ function App() {
           <button 
             className={`nav-item ${activeNav === 'home' ? 'active' : ''}`}
             onClick={() => setActiveNav('home')}>
-            <img className="nav-icon nav-icon-image" src="/house_icon.png" alt="Home" />
+            <img className="nav-icon nav-icon-image" src="house_icon.png" alt="Home" />
             Home
           </button>
 
           <button 
             className={`nav-item ${activeNav === 'stats' ? 'active' : ''}`}
             onClick={() => setActiveNav('stats')}>
-            <img className="nav-icon nav-icon-image" src="/stats_icon.png" alt="Statistics" />
+            <img className="nav-icon nav-icon-image" src="stats_icon.png" alt="Stats" />
             Statistics
           </button>
 
           <button 
             className={`nav-item ${activeNav === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveNav('settings')}>
-              <img className="nav-icon nav-icon-image" src="/settings_icon.png" alt="Settings" />
+            <img className="nav-icon nav-icon-image" src="settings_icon.png" alt="Settings" />
             Settings
           </button>
         </nav>
