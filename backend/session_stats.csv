@@ -1,0 +1,2 @@
+timestamp,username,session_start,session_end,posture_score,alert_count,session_id,session_duration_seconds
+2026-04-13T17:26:22.089210+00:00,smoke_test_user,2026-04-13T17:26:21.069854+00:00,2026-04-13T17:26:22.089156+00:00,0,0,70d5967c-aac0-4632-aebe-6ed69ac43bee,1
