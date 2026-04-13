@@ -3,12 +3,14 @@ import './Home.css';
 
 const API_BASE = 'http://localhost:8000';
 
+const durationOptions = [0.5, 1, 2, 3, 4, 5];
+const formatDuration = (val) => val === 0.5 ? '30 seconds' : `${val} min`;
 
 function Home() {
   const [cameraOn, setCameraOn] = useState(false);
   const [heightAdjust, setHeightAdjust] = useState(50);
   const [warningType, setWarningType] = useState('banner');
-  const [duration, setDuration] = useState(3);
+  const [duration, setDuration] = useState(1);
   const [showDurationHelp, setShowDurationHelp] = useState(false);
   const [postureScore, setPostureScore] = useState(78);
   const [sessionTime, setSessionTime] = useState('2h 34m');
@@ -82,6 +84,7 @@ function Home() {
       console.error('Error sending frame:', err);
     }
   };
+
   useEffect(() => {
     if (cameraOn) {
       startCamera().then(() => {
@@ -154,7 +157,9 @@ function Home() {
             </div>
             <div className="setting-group">
               <div className="setting-label-row">
-                <label className="setting-label">Alert me after this time: {duration} minutes</label>
+                <label className="setting-label">
+                  Alert me after this time: {formatDuration(durationOptions[duration])}
+                </label>
                 <button
                   type="button"
                   className="info-icon-btn"
@@ -168,8 +173,9 @@ function Home() {
               </div>
               <input
                 type="range"
-                min="1"
-                max="30"
+                min="0"
+                max="5"
+                step="1"
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
                 className="slider-input"
@@ -177,7 +183,7 @@ function Home() {
               {showDurationHelp && (
                 <div className="help-dropdown" id="duration-help">
                   <p>
-                    Choose how long you want to maintain bad posture before receiving an alert. 
+                    Choose how long you want to maintain bad posture before receiving an alert.
                     Adjust this based on your preferences and how frequently you want to be reminded to correct your posture.
                   </p>
                   <button
