@@ -9,6 +9,7 @@ function Home() {
   const [heightAdjust, setHeightAdjust] = useState(50);
   const [warningType, setWarningType] = useState('banner');
   const [duration, setDuration] = useState(3);
+  const [showDurationHelp, setShowDurationHelp] = useState(false);
   const [postureScore, setPostureScore] = useState(78);
   const [sessionTime, setSessionTime] = useState('2h 34m');
   const [alertsToday, setAlertsToday] = useState(12);
@@ -152,15 +153,42 @@ function Home() {
               </label>
             </div>
             <div className="setting-group">
-              <label className="setting-label">Duration: {duration} minutes</label>
+              <div className="setting-label-row">
+                <label className="setting-label">Alert me after this time: {duration} minutes</label>
+                <button
+                  type="button"
+                  className="info-icon-btn"
+                  onClick={() => setShowDurationHelp((prev) => !prev)}
+                  aria-expanded={showDurationHelp}
+                  aria-controls="duration-help"
+                  aria-label="Toggle duration help"
+                >
+                  i
+                </button>
+              </div>
               <input
                 type="range"
                 min="1"
                 max="30"
                 value={duration}
-                onChange={(e) => setDuration(e.target.value)}
+                onChange={(e) => setDuration(Number(e.target.value))}
                 className="slider-input"
               />
+              {showDurationHelp && (
+                <div className="help-dropdown" id="duration-help">
+                  <p>
+                    Choose how long you want to maintain bad posture before receiving an alert. 
+                    Adjust this based on your preferences and how frequently you want to be reminded to correct your posture.
+                  </p>
+                  <button
+                    type="button"
+                    className="collapse-help-btn"
+                    onClick={() => setShowDurationHelp(false)}
+                  >
+                    Collapse
+                  </button>
+                </div>
+              )}
             </div>
             <button className="test-alert-btn" onClick={handleTestAlert}>
               🔔 Test Alert

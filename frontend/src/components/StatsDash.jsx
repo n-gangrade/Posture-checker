@@ -11,8 +11,6 @@ function StatsDash() {
         <p>Track your posture performance over time</p>
       </div>
       <div className="stats-content">
-        {/* <p className="placeholder-text">Stats Dashboard - Coming Soon</p> */}
-        {/* Add your stats charts and data here */}
         <p>Selected Time Range:</p>
         <select className="time-range" value={selectedTimeRange} onChange={(e) => setSelectedTimeRange(e.target.value)}>
 
@@ -29,10 +27,6 @@ function StatsDash() {
         <div className="stats-section">
           <h2>Average Posture Score Over {selectedTimeRange}</h2>
           {/* Placeholder for a gauge or bar chart showing average posture score */}
-        </div>
-        <div className="stats-section">
-          <h2>Most Common Issue</h2>
-          {/* Placeholder for a text or chart showing the most common posture issue */}
         </div>
         {/* score over a session*, posture score over time, avg posture score, adjust the time range */} 
         {/* text file: user id, username, posture data w/ timestamps */}

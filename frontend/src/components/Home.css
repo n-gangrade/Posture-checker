@@ -125,12 +125,66 @@ input:checked + .slider:before {
   margin-bottom: 20px;
 }
 
+.setting-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
 .setting-label {
-  display: block;
   font-size: 13px;
   color: #333;
-  margin-bottom: 10px;
   font-weight: 500;
+}
+
+.info-icon-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid #ff1493;
+  background: #fff0f8;
+  color: #ff1493;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.info-icon-btn:hover {
+  background: #ffe1f0;
+}
+
+.help-dropdown {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #ffd0e6;
+  background: #fff7fc;
+  color: #555;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.help-dropdown p {
+  margin: 0 0 10px 0;
+}
+
+.collapse-help-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #ff1493;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.collapse-help-btn:hover {
+  background: #e0127f;
 }
 
 .select-input {
