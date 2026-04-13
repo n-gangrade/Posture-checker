@@ -96,6 +96,7 @@ class StartSessionRequest(BaseModel):
 # LOCAL CSV PERSISTENCE
 # -----------------------------
 SESSION_CSV_PATH = pathlib.Path(__file__).resolve().parent / "session_stats.csv"
+# posture_score is the full-session average posture score (not an instantaneous score).
 SESSION_CSV_HEADERS = [
     "timestamp",
     "username",
@@ -187,6 +188,10 @@ def compute_score(good_frames, bad_frames):
         return 0
     return round((good_frames / tracked) * 100, 2)
 
+
+def compute_session_average_posture_score(good_frames, bad_frames):
+    return compute_score(good_frames, bad_frames)
+
 def get_session_time_string(start_time):
     if not start_time:
         return "0m"
@@ -241,7 +246,7 @@ def end_session():
 
     end_time = time.time()
     start_time = current_session["start_time"]
-    posture_score = compute_score(
+    session_avg_posture_score = compute_session_average_posture_score(
         current_session["good_frames"],
         current_session["bad_frames"]
     )
@@ -261,7 +266,7 @@ def end_session():
         "username": current_session["username"],
         "session_start": session_start_iso,
         "session_end": session_end_iso,
-        "posture_score": posture_score,
+        "posture_score": session_avg_posture_score,
         "alert_count": current_session["alerts_today"],
         "session_id": current_session["session_id"],
         "session_duration_seconds": session_duration_seconds,
@@ -270,9 +275,10 @@ def end_session():
 
     result = {
         "session_time": get_session_time_string(current_session["start_time"]),
-        "posture_score": posture_score,
+        "posture_score": session_avg_posture_score,
+        "session_avg_posture_score": session_avg_posture_score,
         "alerts_today": current_session["alerts_today"],
-        "avg_score": posture_score,
+        "avg_score": session_avg_posture_score,
         "username": current_session["username"],
         "session_id": current_session["session_id"],
         "session_duration_seconds": session_duration_seconds,
