@@ -3,8 +3,14 @@ import './Home.css';
 
 const API_BASE = 'http://localhost:8000';
 
-const durationOptions = [0.5, 1, 2, 3, 4, 5];
-const formatDuration = (val) => val === 0.5 ? '30 seconds' : `${val} min`;
+const durationOptions = [5/60, 10/60, 20/60, 0.5, 1, 2, 3, 4, 5];
+const formatDuration = (val) => {
+  if (val === 5/60) return '5 seconds';
+  if (val === 10/60) return '10 seconds';
+  if (val === 20/60) return '20 seconds';
+  if (val === 0.5) return '30 seconds';
+  return `${val} min`;
+};
 
 function Home() {
   const [cameraOn, setCameraOn] = useState(false);
@@ -20,6 +26,7 @@ function Home() {
 
   const videoRef = useRef(null);
   const intervalRef = useRef(null);
+  const badPostureTimer = useRef(null);
 
   const startCamera = async () => {
     try {
@@ -85,6 +92,21 @@ function Home() {
     }
   };
 
+  const playAlertSound = () => {
+  const audio = new Audio('/alert.mp3');
+  audio.play();
+};
+
+  const sendPostureAlert = () => {
+  if (window.electronAPI) {
+    window.electronAPI.sendNotification({
+      title: 'Posture Alert',
+      body: 'You\'ve had bad posture for ' + formatDuration(durationOptions[duration]) + '. Time to straighten up!',
+    });
+  }
+  playAlertSound();
+};
+
   useEffect(() => {
     if (cameraOn) {
       startCamera().then(() => {
@@ -96,6 +118,20 @@ function Home() {
 
     return () => stopCamera();
   }, [cameraOn]);
+
+  useEffect(() => {
+  if (postureLabel === 'BAD') {
+    if (!badPostureTimer.current) {
+      badPostureTimer.current = setTimeout(() => {
+        sendPostureAlert();
+        badPostureTimer.current = null;
+      }, durationOptions[duration] * 60 * 1000);
+    }
+  } else {
+    clearTimeout(badPostureTimer.current);
+    badPostureTimer.current = null;
+  }
+}, [postureLabel, duration]);
 
   const handleTestAlert = () => {
     alert('Test Alert: Check your posture!');
@@ -174,7 +210,7 @@ function Home() {
               <input
                 type="range"
                 min="0"
-                max="5"
+                max="8"
                 step="1"
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}

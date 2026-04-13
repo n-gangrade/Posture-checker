@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session } = require('electron');
+const { app, BrowserWindow, session, ipcMain, Notification } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 
@@ -22,13 +22,22 @@ function startBackend() {
 }
 
 function createWindow() {
-  mainWindow = new BrowserWindow({ width: 1200, height: 800 });
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+    },
+  });
   setTimeout(() => {
     mainWindow.loadFile(path.join(__dirname, 'out', 'index.html'));
   }, 4000);
 }
 
-
+ipcMain.on('send-notification', (event, { title, body }) => {
+  new Notification({ title, body }).show();
+});
 
 app.whenReady().then(() => {
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
