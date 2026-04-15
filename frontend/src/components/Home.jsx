@@ -20,7 +20,25 @@ function Home() {
 
   const startCamera = async () => {
     try {
-      await fetch(`${API_BASE}/start-session`, { method: 'POST' });
+      let username = 'anonymous';
+      try {
+        const profileRes = await fetch(`${API_BASE}/profile`);
+        if (profileRes.ok) {
+          const profilePayload = await profileRes.json();
+          const profileEmail = profilePayload?.profile?.email;
+          if (profileEmail && typeof profileEmail === 'string' && profileEmail.trim()) {
+            username = profileEmail.trim().toLowerCase();
+          }
+        }
+      } catch (profileErr) {
+        console.error('Could not load profile for session start:', profileErr);
+      }
+
+      await fetch(`${API_BASE}/start-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
 
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {

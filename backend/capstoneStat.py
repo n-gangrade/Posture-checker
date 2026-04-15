@@ -1,5 +1,6 @@
 import base64
 import csv
+import json
 import os
 import urllib.request
 import time
@@ -14,6 +15,7 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import numpy as np
 from fastapi import FastAPI
+from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pathlib
@@ -90,12 +92,19 @@ class FrameRequest(BaseModel):
 
 class StartSessionRequest(BaseModel):
     username: Optional[str] = None
+    email: Optional[str] = None
+
+
+class UserProfileRequest(BaseModel):
+    name: str
+    email: str
 
 
 # -----------------------------
 # LOCAL CSV PERSISTENCE
 # -----------------------------
 SESSION_CSV_PATH = pathlib.Path(__file__).resolve().parent / "session_stats.csv"
+USER_PROFILE_PATH = pathlib.Path.home() / ".posture_checker" / "user_profile.json"
 # posture_score is the full-session average posture score (not an instantaneous score).
 SESSION_CSV_HEADERS = [
     "timestamp",
@@ -132,6 +141,36 @@ def append_session_to_csv(row):
         return True, None
     except OSError as exc:
         return False, str(exc)
+
+
+def load_user_profile():
+    if not USER_PROFILE_PATH.exists() or USER_PROFILE_PATH.stat().st_size == 0:
+        return None
+
+    try:
+        with open(USER_PROFILE_PATH, "r", encoding="utf-8") as profile_file:
+            return json.load(profile_file)
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def save_user_profile(name, email):
+    existing_profile = load_user_profile() or {}
+    created_at = existing_profile.get("created_at")
+    if not created_at:
+        created_at = datetime.now(timezone.utc).isoformat()
+
+    profile = {
+        "name": name,
+        "email": email,
+        "created_at": created_at,
+    }
+
+    USER_PROFILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(USER_PROFILE_PATH, "w", encoding="utf-8") as profile_file:
+        json.dump(profile, profile_file, indent=2)
+
+    return profile
 
 # -----------------------------
 # POSTURE LOGIC
@@ -209,11 +248,35 @@ def get_session_time_string(start_time):
 def root():
     return {"message": "Posture backend is running"}
 
+
+@app.get("/profile")
+def get_profile():
+    return {"profile": load_user_profile()}
+
+
+@app.post("/profile")
+def upsert_profile(payload: UserProfileRequest):
+    name = payload.name.strip()
+    email = payload.email.strip().lower()
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    try:
+        profile = save_user_profile(name=name, email=email)
+        return {"message": "Profile saved", "profile": profile}
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
 @app.post("/start-session")
 def start_session(payload: Optional[StartSessionRequest] = None):
     username = "anonymous"
-    if payload and payload.username:
-        candidate = payload.username.strip()
+    if payload:
+        candidate = ""
+        if payload.email:
+            candidate = payload.email.strip().lower()
+        elif payload.username:
+            candidate = payload.username.strip()
         if candidate:
             username = candidate
 
