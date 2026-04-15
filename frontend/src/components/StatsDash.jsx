@@ -2,7 +2,7 @@ import {useState } from 'react';
 import './StatsDash.css';
 
 function StatsDash() {
-  const [selectedTimeRange, setSelectedTimeRange] = useState('Past 7 days');
+  const [selectedTimeRange, setSelectedTimeRange] = useState('Past Hour');
 
   return (
     <div className="stats-dash-page">
@@ -14,7 +14,7 @@ function StatsDash() {
         <p>Selected Time Range:</p>
         <select className="time-range" value={selectedTimeRange} onChange={(e) => setSelectedTimeRange(e.target.value)}>
 
-          <option value="Past hour">Past Hour</option>
+          <option value="Past Hour">Past Hour</option>
           <option value="Past Day">Past Day</option>
           <option value="Past 7 Days">Past 7 Days</option>
           <option value="Past 30 Days">Past 30 Days</option>

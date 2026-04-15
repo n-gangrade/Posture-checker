@@ -2,7 +2,8 @@ import {useState, useEffect} from 'react';
 import './Settings.css';
 
 function Settings() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Simulate authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
@@ -11,8 +12,7 @@ function Settings() {
   });
 
   useEffect(() => {
-    // Simulate fetching profile data from an API
-    // In a real application, you would replace this with an actual API call
+    // Check if user is already authenticated
     const savedUser = localStorage.getItem('user');
     const savedProfile = localStorage.getItem('profileData');
     if (savedUser) {
@@ -32,28 +32,54 @@ function Settings() {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setLoginEmail('');
     localStorage.removeItem('user');
     localStorage.removeItem('profileData');
   };
+
   const handleLogin = () => {
+    if (!loginEmail.trim()) {
+      alert('Please enter your email');
+      return;
+    }
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(loginEmail)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    
     setIsAuthenticated(true);
-    localStorage.setItem('user', 'dummyUser');
-    setProfileData({
-      name: 'Barbie',
-      email: 'barbie@tamu.edu',
-      memberSince: '2026-04-08',
-      postureScore: 67
-    });
-  }
-  const handleCreateAccount = () => {
-    setIsAuthenticated(true);
-    localStorage.setItem('user', 'dummyUser');
+    localStorage.setItem('user', loginEmail);
     setProfileData({
       name: '',
-      email: '',
+      email: loginEmail,
       memberSince: new Date().toLocaleDateString(),
       postureScore: 0
     });
+    setLoginEmail('');
+  };
+
+  const handleCreateAccount = () => {
+    if (!loginEmail.trim()) {
+      alert('Please enter your email');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(loginEmail)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    
+    setIsAuthenticated(true);
+    localStorage.setItem('user', loginEmail);
+    setProfileData({
+      name: '',
+      email: loginEmail,
+      memberSince: new Date().toLocaleDateString(),
+      postureScore: 0
+    });
+    setLoginEmail('');
   }
 
   return (
@@ -65,8 +91,22 @@ function Settings() {
       <div className="profile-content">
         {!isAuthenticated ? (
           <div className="auth-section">
-            <button className="auth-button" onClick={handleLogin}>Login</button>
-            <button className="auth-button" onClick={handleCreateAccount}>Create Account</button>
+            <h2>Login or Create Account</h2>
+            <div className="login-form">
+              <label htmlFor="email">Email Address:</label>
+              <input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              />
+              <div className="auth-buttons">
+                <button className="auth-button" onClick={handleLogin}>Login</button>
+                <button className="auth-button" onClick={handleCreateAccount}>Create Account</button>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="profile-section">
