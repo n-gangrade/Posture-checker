@@ -24,12 +24,33 @@
   display: flex;
   justify-content: flex-end;
   margin-bottom: 20px;
-} 
+}
 
 .stats-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.stats-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.time-range-label {
+  margin: 0;
+  font-size: 15px;
+  color: #333;
+}
+
+.time-range {
+  padding: 8px 10px;
+  border: 1px solid #c5c5c5;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
 }
 
 .stats-section {
@@ -39,7 +60,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-
 }
 .stats-section h2 {
   font-size: 24px;
@@ -47,8 +67,18 @@
   font-weight: 500;
 }
 
+.chart-section {
+  min-height: 430px;
+}
+
+.chart-subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
 .stats-section .chart-placeholder {
-  flex: 1;
+  min-height: 300px;
   background: #e0e0e0;
   border-radius: 4px;
   display: flex;
@@ -66,4 +96,88 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.chart-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.session-chart {
+  width: 100%;
+  height: auto;
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 10px;
+}
+
+.chart-grid-line {
+  stroke: #ebebeb;
+  stroke-width: 1;
+}
+
+.chart-axis-label {
+  fill: #888;
+  font-size: 11px;
+}
+
+.chart-axis-title {
+  fill: #555;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chart-line {
+  stroke: #ff1493;
+  stroke-width: 2.5;
+}
+
+.chart-point {
+  fill: #ff1493;
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.chart-x-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: #7d7d7d;
+}
+
+.chart-summary {
+  margin: 0;
+  font-size: 14px;
+  color: #444;
+}
+
+.export-message {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .stats-dash-page {
+    padding: 20px;
+  }
+
+  .stats-section {
+    padding: 16px;
+  }
+
+  .stats-section h2 {
+    font-size: 20px;
+  }
+
+  .chart-section {
+    min-height: 360px;
+  }
+
+  .chart-x-labels {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
