@@ -9,16 +9,21 @@ const {
 const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 
 let backendProcess;
 let mainWindow;
 
 function findSessionCsvPath() {
-  const sourceCandidates = [
+  const canonical = path.join(os.homedir(), ".posture_checker", "session_stats.csv");
+  if (fs.existsSync(canonical)) return canonical;
+
+  // Fallback for legacy/dev locations
+  const fallbacks = [
     path.join(__dirname, "..", "backend", "session_stats.csv"),
     path.join(__dirname, "..", "backend", "dist", "session_stats.csv"),
   ];
-  return sourceCandidates.find((candidate) => fs.existsSync(candidate));
+  return fallbacks.find((p) => fs.existsSync(p));
 }
 
 function parseCsvLine(line) {

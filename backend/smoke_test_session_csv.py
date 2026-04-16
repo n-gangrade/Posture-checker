@@ -44,7 +44,7 @@ def main():
     parser.add_argument("--username", default="smoke_test_user")
     parser.add_argument(
         "--csv-path",
-        default=str(Path(__file__).resolve().parent / "session_stats.csv"),
+        default=str(Path.home() / ".posture_checker" / "session_stats.csv"),
     )
     args = parser.parse_args()
 

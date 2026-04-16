@@ -21,6 +21,13 @@ function withinRange(timestamp, selectedTimeRange) {
   return true;
 }
 
+function formatChartDate(timestamp) {
+  return new Date(timestamp).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
 function StatsDash() {
   const [selectedTimeRange, setSelectedTimeRange] = useState("Past Hour");
   const [exportMessage, setExportMessage] = useState("");
@@ -114,7 +121,7 @@ function StatsDash() {
     const paddingLeft = 56;
     const paddingRight = 24;
     const paddingTop = 20;
-    const paddingBottom = 58;
+    const paddingBottom = 76;
     const plotWidth = width - paddingLeft - paddingRight;
     const plotHeight = height - paddingTop - paddingBottom;
 
@@ -127,6 +134,20 @@ function StatsDash() {
       return { ...session, x, y };
     });
 
+    const tickIndexes =
+      points.length <= 1
+        ? [0]
+        : Array.from({ length: Math.min(5, points.length) }, (_, index) =>
+            Math.round((index * (points.length - 1)) / 4),
+          );
+    const xTicks = [...new Set(tickIndexes)].map((index) => {
+      const point = points[index];
+      return {
+        x: point.x,
+        label: formatChartDate(point.sessionTime),
+      };
+    });
+
     return {
       width,
       height,
@@ -137,6 +158,7 @@ function StatsDash() {
       points,
       polyline: points.map((point) => `${point.x},${point.y}`).join(" "),
       yTicks: [0, 25, 50, 75, 100],
+      xTicks,
     };
   }, [filteredSessions]);
 
@@ -209,7 +231,7 @@ function StatsDash() {
                 className="session-chart"
                 viewBox={`0 0 ${chartData.width} ${chartData.height}`}
                 role="img"
-                aria-label="Line graph of posture score by session over time"
+                aria-label="Line graph of posture score by session date"
               >
                 <text
                   x={16}
@@ -249,6 +271,29 @@ function StatsDash() {
                   points={chartData.polyline}
                 />
 
+                {chartData.xTicks.map((tick) => {
+                  const tickTop = chartData.height - chartData.paddingBottom;
+                  return (
+                    <g key={`${tick.x}-${tick.label}`}>
+                      <line
+                        x1={tick.x}
+                        y1={tickTop}
+                        x2={tick.x}
+                        y2={tickTop + 6}
+                        className="chart-axis-tick"
+                      />
+                      <text
+                        x={tick.x}
+                        y={chartData.height - 20}
+                        textAnchor="middle"
+                        className="chart-x-axis-label"
+                      >
+                        {tick.label}
+                      </text>
+                    </g>
+                  );
+                })}
+
                 {chartData.points.map((point) => (
                   <g key={`${point.sessionTime}-${point.x}`}>
                     <circle
@@ -263,20 +308,13 @@ function StatsDash() {
 
                 <text
                   x={chartData.width / 2}
-                  y={chartData.height - 14}
+                  y={chartData.height - 8}
                   textAnchor="middle"
                   className="chart-axis-title"
                 >
-                  Session Time
+                  Session Date
                 </text>
               </svg>
-
-              <div className="chart-x-labels">
-                <span>{filteredSessions[0].labelTime}</span>
-                <span>
-                  {filteredSessions[filteredSessions.length - 1].labelTime}
-                </span>
-              </div>
             </div>
           )}
 

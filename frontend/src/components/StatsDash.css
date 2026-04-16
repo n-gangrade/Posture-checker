@@ -122,6 +122,16 @@
   font-size: 11px;
 }
 
+.chart-x-axis-label {
+  fill: #7d7d7d;
+  font-size: 11px;
+}
+
+.chart-axis-tick {
+  stroke: #c9c9c9;
+  stroke-width: 1;
+}
+
 .chart-axis-title {
   fill: #555;
   font-size: 12px;
@@ -137,14 +147,6 @@
   fill: #ff1493;
   stroke: #fff;
   stroke-width: 1.5;
-}
-
-.chart-x-labels {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 12px;
-  color: #7d7d7d;
 }
 
 .chart-summary {
@@ -176,8 +178,4 @@
     min-height: 360px;
   }
 
-  .chart-x-labels {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 }

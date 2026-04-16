@@ -103,7 +103,8 @@ class UserProfileRequest(BaseModel):
 # -----------------------------
 # LOCAL CSV PERSISTENCE
 # -----------------------------
-SESSION_CSV_PATH = pathlib.Path(__file__).resolve().parent / "session_stats.csv"
+SESSION_DATA_DIR = pathlib.Path.home() / ".posture_checker"
+SESSION_CSV_PATH = SESSION_DATA_DIR / "session_stats.csv"
 USER_PROFILE_PATH = pathlib.Path.home() / ".posture_checker" / "user_profile.json"
 # posture_score is the full-session average posture score (not an instantaneous score).
 SESSION_CSV_HEADERS = [
