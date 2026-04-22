@@ -141,6 +141,10 @@ ipcMain.on("send-notification", (event, { title, body }) => {
   }, 5000);
 });
 
+ipcMain.on('send-system-notification', (event, { title, body }) => {
+  new Notification({ title, body }).show();
+});
+
 ipcMain.on("focus-main-window", () => {
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore();

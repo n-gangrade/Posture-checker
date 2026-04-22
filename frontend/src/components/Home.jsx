@@ -15,7 +15,7 @@ const formatDuration = (val) => {
 function Home() {
   const [cameraOn, setCameraOn] = useState(false);
   const [heightAdjust, setHeightAdjust] = useState(50);
-  const [warningType, setWarningType] = useState('banner');
+  const [warningType, setWarningType] = useState('popup');
   const [duration, setDuration] = useState(1);
   const [showDurationHelp, setShowDurationHelp] = useState(false);
   const [postureScore, setPostureScore] = useState(78);
@@ -115,14 +115,37 @@ function Home() {
   audio.play();
 };
 
-  const sendPostureAlert = () => {
+const sendPostureAlert = () => {
   if (window.electronAPI) {
-    window.electronAPI.sendNotification({
-      title: 'Posture Alert',
-      body: 'You\'ve had bad posture for ' + formatDuration(durationOptions[duration]) + '. Time to straighten up!',
-    });
+    if (warningType === 'popup') {
+      window.electronAPI.sendNotification({
+        title: 'Posture Alert',
+        body: 'You\'ve had bad posture for ' + formatDuration(durationOptions[duration]) + '. Time to straighten up!',
+      });
+    } else if (warningType === 'banner') {
+      window.electronAPI.sendSystemNotification({
+        title: 'Posture Alert',
+        body: 'You\'ve had bad posture for ' + formatDuration(durationOptions[duration]) + '. Time to straighten up!',
+      });
+    }
+    // if warningType === 'none', do nothing
   }
-  playAlertSound();
+};
+
+const handleTestAlert = () => {
+  if (window.electronAPI) {
+    if (warningType === 'popup') {
+      window.electronAPI.sendNotification({
+        title: 'Posture Alert',
+        body: 'This is a test alert. Check your posture!',
+      });
+    } else if (warningType === 'banner') {
+      window.electronAPI.sendSystemNotification({
+        title: 'Posture Alert',
+        body: 'This is a test alert. Check your posture!',
+      });
+    }
+  }
 };
 
   useEffect(() => {
@@ -151,15 +174,6 @@ function Home() {
   }
 }, [postureLabel, duration]);
 
-  const handleTestAlert = () => {
-    if (window.electronAPI) {
-      window.electronAPI.sendNotification({
-        title: 'Posture Alert',
-        body: 'This is a test alert. Check your posture!',
-      });
-    }
-  };
-
   return (
     <div className="home-page">
       <header className="header">
@@ -187,21 +201,21 @@ function Home() {
                 <input
                   type="radio"
                   name="warning"
-                  value="banner"
-                  checked={warningType === 'banner'}
-                  onChange={(e) => setWarningType(e.target.value)}
-                />
-                <span>Banner alert</span>
-              </label>
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  name="warning"
                   value="popup"
                   checked={warningType === 'popup'}
                   onChange={(e) => setWarningType(e.target.value)}
                 />
                 <span>Pop up alert</span>
+              </label>
+              <label className="radio-label">
+                <input
+                  type="radio"
+                  name="warning"
+                  value="banner"
+                  checked={warningType === 'banner'}
+                  onChange={(e) => setWarningType(e.target.value)}
+                />
+                <span>System alert</span>
               </label>
               <label className="radio-label">
                 <input
