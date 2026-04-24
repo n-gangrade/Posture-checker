@@ -137,6 +137,13 @@
   fill: #ff1493;
   stroke: #fff;
   stroke-width: 1.5;
+  cursor: pointer;
+}
+
+.chart-point:focus {
+  outline: none;
+  stroke: #1a1a2e;
+  stroke-width: 2;
 }
 
 .chart-x-labels {
@@ -151,6 +158,12 @@
   margin: 0;
   font-size: 14px;
   color: #444;
+}
+
+.chart-point-detail {
+  margin: 0;
+  font-size: 13px;
+  color: #555;
 }
 
 .export-message {

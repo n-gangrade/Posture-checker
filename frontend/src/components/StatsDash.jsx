@@ -21,12 +21,29 @@ function withinRange(timestamp, selectedTimeRange) {
   return true;
 }
 
+function getXAxisLabel(selectedTimeRange) {
+  if (selectedTimeRange === "Past Hour") {
+    return "Session Time (Last Hour)";
+  }
+  if (selectedTimeRange === "Past Day") {
+    return "Session Time (Last 24 Hours)";
+  }
+  if (selectedTimeRange === "Past 7 Days") {
+    return "Session Time (Last 7 Days)";
+  }
+  if (selectedTimeRange === "Past 30 Days") {
+    return "Session Time (Last 30 Days)";
+  }
+  return "Session Time";
+}
+
 function StatsDash() {
   const [selectedTimeRange, setSelectedTimeRange] = useState("Past Hour");
   const [exportMessage, setExportMessage] = useState("");
   const [graphMessage, setGraphMessage] = useState("Loading session data...");
   const [sessions, setSessions] = useState([]);
   const [currentUser, setCurrentUser] = useState("");
+  const [selectedPoint, setSelectedPoint] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -107,6 +124,28 @@ function StatsDash() {
     );
     return byUser.length ? byUser : fromRange;
   }, [sessions, selectedTimeRange, currentUser]);
+
+  useEffect(() => {
+    setSelectedPoint(null);
+  }, [selectedTimeRange, currentUser]);
+
+  useEffect(() => {
+    if (filteredSessions.length === 0) {
+      setSelectedPoint(null);
+      return;
+    }
+
+    if (!selectedPoint) {
+      return;
+    }
+
+    const exists = filteredSessions.some(
+      (session) => session.sessionTime === selectedPoint.sessionTime,
+    );
+    if (!exists) {
+      setSelectedPoint(null);
+    }
+  }, [filteredSessions, selectedPoint]);
 
   const chartData = useMemo(() => {
     const width = 760;
@@ -254,8 +293,18 @@ function StatsDash() {
                     <circle
                       cx={point.x}
                       cy={point.y}
-                      r="4"
+                      r={selectedPoint?.sessionTime === point.sessionTime ? "6" : "4"}
                       className="chart-point"
+                      onClick={() => setSelectedPoint(point)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setSelectedPoint(point);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Session at ${point.labelTime} with posture score ${point.postureScore}%`}
                     />
                     <title>{`${point.labelTime}: ${point.postureScore}%`}</title>
                   </g>
@@ -267,7 +316,7 @@ function StatsDash() {
                   textAnchor="middle"
                   className="chart-axis-title"
                 >
-                  Session Time
+                  {getXAxisLabel(selectedTimeRange)}
                 </text>
               </svg>
 
@@ -277,6 +326,16 @@ function StatsDash() {
                   {filteredSessions[filteredSessions.length - 1].labelTime}
                 </span>
               </div>
+
+              {selectedPoint ? (
+                <p className="chart-point-detail">
+                  Selected session: {selectedPoint.labelTime} | Accuracy: {selectedPoint.postureScore}%
+                </p>
+              ) : (
+                <p className="chart-point-detail">
+                  Click a data point to see its exact time and accuracy score.
+                </p>
+              )}
             </div>
           )}
 
