@@ -310,6 +310,54 @@ function StatsDash() {
                   </g>
                 ))}
 
+                {selectedPoint ? (() => {
+                  const tooltipWidth = 240;
+                  const tooltipHeight = 52;
+                  const tooltipMargin = 10;
+                  const drawOnLeft =
+                    selectedPoint.x + tooltipWidth + tooltipMargin >
+                    chartData.width - chartData.paddingRight;
+
+                  const tooltipX = drawOnLeft
+                    ? Math.max(
+                        chartData.paddingLeft,
+                        selectedPoint.x - tooltipWidth - tooltipMargin,
+                      )
+                    : Math.min(
+                        chartData.width - chartData.paddingRight - tooltipWidth,
+                        selectedPoint.x + tooltipMargin,
+                      );
+
+                  const tooltipY = Math.max(
+                    chartData.paddingTop,
+                    Math.min(
+                      selectedPoint.y - tooltipHeight - tooltipMargin,
+                      chartData.height - chartData.paddingBottom - tooltipHeight,
+                    ),
+                  );
+
+                  return (
+                    <g
+                      className="chart-floating-tooltip"
+                      transform={`translate(${tooltipX} ${tooltipY})`}
+                      pointerEvents="none"
+                    >
+                      <rect
+                        width={tooltipWidth}
+                        height={tooltipHeight}
+                        rx="8"
+                        className="chart-tooltip-box"
+                      />
+                      <text x="12" y="20" className="chart-tooltip-text">
+                        <tspan x="12" dy="0">{selectedPoint.labelTime}</tspan>
+                        <tspan x="12" dy="16">
+                          Accuracy: {selectedPoint.postureScore}%
+                        </tspan>
+                      </text>
+                    </g>
+                  );
+                })() : null}
+
                 <text
                   x={chartData.width / 2}
                   y={chartData.height - 14}
@@ -326,16 +374,6 @@ function StatsDash() {
                   {filteredSessions[filteredSessions.length - 1].labelTime}
                 </span>
               </div>
-
-              {selectedPoint ? (
-                <p className="chart-point-detail">
-                  Selected session: {selectedPoint.labelTime} | Accuracy: {selectedPoint.postureScore}%
-                </p>
-              ) : (
-                <p className="chart-point-detail">
-                  Click a data point to see its exact time and accuracy score.
-                </p>
-              )}
             </div>
           )}
 
