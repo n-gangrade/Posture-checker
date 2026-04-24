@@ -2,6 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import "./StatsDash.css";
 
 const API_BASE = "http://localhost:8000";
+const RANGE_MS = {
+  "Past Hour": 60 * 60 * 1000,
+  "Past Day": 24 * 60 * 60 * 1000,
+  "Past 7 Days": 7 * 24 * 60 * 60 * 1000,
+  "Past 30 Days": 30 * 24 * 60 * 60 * 1000,
+};
 
 function toLower(value) {
   return String(value || "")
@@ -10,15 +16,55 @@ function toLower(value) {
 }
 
 function withinRange(timestamp, selectedTimeRange) {
-  const now = Date.now();
-  const ms = now - timestamp;
+  const rangeMs = RANGE_MS[selectedTimeRange];
+  if (!rangeMs) {
+    return true;
+  }
 
-  if (selectedTimeRange === "Past Hour") return ms <= 60 * 60 * 1000;
-  if (selectedTimeRange === "Past Day") return ms <= 24 * 60 * 60 * 1000;
-  if (selectedTimeRange === "Past 7 Days") return ms <= 7 * 24 * 60 * 60 * 1000;
-  if (selectedTimeRange === "Past 30 Days")
-    return ms <= 30 * 24 * 60 * 60 * 1000;
-  return true;
+  const ms = Date.now() - timestamp;
+  if (ms < 0) {
+    return false;
+  }
+
+  return ms <= rangeMs;
+}
+
+function getRangeWindow(selectedTimeRange, now = Date.now()) {
+  const rangeMs = RANGE_MS[selectedTimeRange];
+  if (!rangeMs) {
+    return null;
+  }
+
+  return {
+    start: now - rangeMs,
+    end: now,
+  };
+}
+
+function formatAxisBoundary(timestamp, selectedTimeRange) {
+  const date = new Date(timestamp);
+
+  if (selectedTimeRange === "Past Hour") {
+    return date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  }
+
+  if (selectedTimeRange === "Past Day") {
+    return date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+
+  return date.toLocaleString([], {
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 function getXAxisLabel(selectedTimeRange) {
@@ -63,16 +109,12 @@ function StatsDash() {
 
         const normalized = (statsResult.rows || [])
           .map((row) => {
-            const rawTime =
-              row.session_start || row.timestamp || row.session_end;
+            const rawTime = row.session_start || row.timestamp || row.session_end;
             const sessionTime = Date.parse(rawTime);
             const postureScore = Number(row.posture_score);
             const username = toLower(row.username);
 
-            if (
-              !Number.isFinite(sessionTime) ||
-              !Number.isFinite(postureScore)
-            ) {
+            if (!Number.isFinite(sessionTime) || !Number.isFinite(postureScore)) {
               return null;
             }
 
@@ -157,11 +199,22 @@ function StatsDash() {
     const plotWidth = width - paddingLeft - paddingRight;
     const plotHeight = height - paddingTop - paddingBottom;
 
-    const points = filteredSessions.map((session, index) => {
-      const x =
-        filteredSessions.length === 1
-          ? paddingLeft + plotWidth / 2
-          : paddingLeft + (index / (filteredSessions.length - 1)) * plotWidth;
+    const now = Date.now();
+    const window = getRangeWindow(selectedTimeRange, now);
+    const minSessionTime = filteredSessions[0]?.sessionTime ?? now;
+    const maxSessionTime =
+      filteredSessions[filteredSessions.length - 1]?.sessionTime ?? now;
+    const domainStart = window?.start ?? minSessionTime;
+    const domainEnd = window?.end ?? maxSessionTime;
+    const domainRange = Math.max(1, domainEnd - domainStart);
+
+    const points = filteredSessions.map((session) => {
+      const clampedTime = Math.min(
+        domainEnd,
+        Math.max(domainStart, session.sessionTime),
+      );
+      const ratio = (clampedTime - domainStart) / domainRange;
+      const x = paddingLeft + ratio * plotWidth;
       const y = paddingTop + ((100 - session.postureScore) / 100) * plotHeight;
       return { ...session, x, y };
     });
@@ -176,8 +229,10 @@ function StatsDash() {
       points,
       polyline: points.map((point) => `${point.x},${point.y}`).join(" "),
       yTicks: [0, 25, 50, 75, 100],
+      xStartLabel: formatAxisBoundary(domainStart, selectedTimeRange),
+      xEndLabel: formatAxisBoundary(domainEnd, selectedTimeRange),
     };
-  }, [filteredSessions]);
+  }, [filteredSessions, selectedTimeRange]);
 
   const handleExport = async () => {
     if (!window.electronAPI?.exportSessionData) {
@@ -310,53 +365,59 @@ function StatsDash() {
                   </g>
                 ))}
 
-                {selectedPoint ? (() => {
-                  const tooltipWidth = 240;
-                  const tooltipHeight = 52;
-                  const tooltipMargin = 10;
-                  const drawOnLeft =
-                    selectedPoint.x + tooltipWidth + tooltipMargin >
-                    chartData.width - chartData.paddingRight;
+                {selectedPoint
+                  ? (() => {
+                      const tooltipWidth = 240;
+                      const tooltipHeight = 52;
+                      const tooltipMargin = 10;
+                      const drawOnLeft =
+                        selectedPoint.x + tooltipWidth + tooltipMargin >
+                        chartData.width - chartData.paddingRight;
 
-                  const tooltipX = drawOnLeft
-                    ? Math.max(
-                        chartData.paddingLeft,
-                        selectedPoint.x - tooltipWidth - tooltipMargin,
-                      )
-                    : Math.min(
-                        chartData.width - chartData.paddingRight - tooltipWidth,
-                        selectedPoint.x + tooltipMargin,
+                      const tooltipX = drawOnLeft
+                        ? Math.max(
+                            chartData.paddingLeft,
+                            selectedPoint.x - tooltipWidth - tooltipMargin,
+                          )
+                        : Math.min(
+                            chartData.width - chartData.paddingRight - tooltipWidth,
+                            selectedPoint.x + tooltipMargin,
+                          );
+
+                      const tooltipY = Math.max(
+                        chartData.paddingTop,
+                        Math.min(
+                          selectedPoint.y - tooltipHeight - tooltipMargin,
+                          chartData.height -
+                            chartData.paddingBottom -
+                            tooltipHeight,
+                        ),
                       );
 
-                  const tooltipY = Math.max(
-                    chartData.paddingTop,
-                    Math.min(
-                      selectedPoint.y - tooltipHeight - tooltipMargin,
-                      chartData.height - chartData.paddingBottom - tooltipHeight,
-                    ),
-                  );
-
-                  return (
-                    <g
-                      className="chart-floating-tooltip"
-                      transform={`translate(${tooltipX} ${tooltipY})`}
-                      pointerEvents="none"
-                    >
-                      <rect
-                        width={tooltipWidth}
-                        height={tooltipHeight}
-                        rx="8"
-                        className="chart-tooltip-box"
-                      />
-                      <text x="12" y="20" className="chart-tooltip-text">
-                        <tspan x="12" dy="0">{selectedPoint.labelTime}</tspan>
-                        <tspan x="12" dy="16">
-                          Accuracy: {selectedPoint.postureScore}%
-                        </tspan>
-                      </text>
-                    </g>
-                  );
-                })() : null}
+                      return (
+                        <g
+                          className="chart-floating-tooltip"
+                          transform={`translate(${tooltipX} ${tooltipY})`}
+                          pointerEvents="none"
+                        >
+                          <rect
+                            width={tooltipWidth}
+                            height={tooltipHeight}
+                            rx="8"
+                            className="chart-tooltip-box"
+                          />
+                          <text x="12" y="20" className="chart-tooltip-text">
+                            <tspan x="12" dy="0">
+                              {selectedPoint.labelTime}
+                            </tspan>
+                            <tspan x="12" dy="16">
+                              Accuracy: {selectedPoint.postureScore}%
+                            </tspan>
+                          </text>
+                        </g>
+                      );
+                    })()
+                  : null}
 
                 <text
                   x={chartData.width / 2}
@@ -369,17 +430,13 @@ function StatsDash() {
               </svg>
 
               <div className="chart-x-labels">
-                <span>{filteredSessions[0].labelTime}</span>
-                <span>
-                  {filteredSessions[filteredSessions.length - 1].labelTime}
-                </span>
+                <span>{chartData.xStartLabel}</span>
+                <span>{chartData.xEndLabel}</span>
               </div>
             </div>
           )}
 
-          <p className="chart-summary">
-            Sessions shown: {filteredSessions.length}
-          </p>
+          <p className="chart-summary">Sessions shown: {filteredSessions.length}</p>
         </div>
       </div>
     </div>
