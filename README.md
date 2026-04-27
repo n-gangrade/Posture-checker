@@ -1,245 +1,230 @@
-# Posture Checker Desktop App
+# Posture Checker
 
-This project runs the Posture Checker as a desktop application using:
-- Python (FastAPI backend)
-- Vite (frontend)
-- Electron (desktop wrapper)
-- PyInstaller (bundles backend)
+Posture Checker is a local desktop app that monitors posture in real time from webcam frames, raises alerts for sustained bad posture, and stores session metrics for dashboarding.
 
----
+## Architecture Overview
 
-# 🚀 Setup & Run (First Time)
+- Frontend: React + Vite UI for Home, Statistics, and Settings
+- Backend: FastAPI + MediaPipe posture analysis and local persistence
+- Desktop shell: Electron app that launches backend and hosts frontend build
+- Packaging: PyInstaller (backend executable) + electron-builder (desktop installer)
 
----
+## Repository Structure
 
-## 🪟 Windows Setup
+```text
+Posture-checker/
+  backend/
+    capstoneStat.py
+    capstone.py
+    requirements.txt
+    smoke_test_session_csv.py
+    session_stats.csv
+  electron/
+    main.js
+    preload.js
+    notification.html
+    package.json
+  frontend/
+    src/
+      App.jsx
+      components/
+        Home.jsx
+        StatsDash.jsx
+        Settings.jsx
+    package.json
+  package.json
+  README.md
+```
 
-### 1. Create and activate Python virtual environment
+## Core User Flows
+
+### 1. Start monitoring
+
+- User enables Camera in Home view.
+- Frontend calls POST /start-session.
+- Frontend streams webcam frames to POST /analyze-frame every 200ms.
+- Backend calibrates first, then classifies posture as GOOD or BAD.
+- Frontend displays session metrics and current posture label.
+
+### 2. Receive alerts
+
+- User selects alert type (popup, system, or none) and delay threshold.
+- Frontend triggers Electron IPC to show notifications when threshold is crossed.
+- Backend separately tracks alert counters for session stats.
+
+### 3. Review and export statistics
+
+- Stats view requests parsed CSV rows via Electron IPC.
+- Data is filtered by range and current profile user when available.
+- User can export session CSV through save dialog.
+
+### 4. Manage profile
+
+- Settings view loads/saves local profile via backend profile endpoints.
+- Email is required for profile save.
+
+## Data Persistence
+
+- Session CSV:
+  - backend/session_stats.csv
+- User profile JSON:
+  - %USERPROFILE%\\.posture_checker\\user_profile.json
+- Pose model download cache:
+  - %USERPROFILE%\\posture_checker_model\\pose_landmarker_lite.task
+
+## API Summary
+
+Backend default host/port:
+
+- http://127.0.0.1:8000
+
+Primary routes:
+
+- GET /
+- GET /profile
+- POST /profile
+- POST /start-session
+- POST /analyze-frame
+- GET /status
+- POST /end-session
+
+For route payload examples and behavior details, see backend/README.md.
+
+## Prerequisites
+
+- Python 3.10+ recommended
+- Node.js 18+ recommended
+- npm
+
+## First-Time Setup (Windows)
+
+From project root:
 
 ```powershell
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-//for mac
-source .venv/bin/activate
-```
-
----
-
-### 2. Install backend dependencies
-
-```powershell
 pip install -r requirements.txt
 pip install pyinstaller
-```
 
----
-
-### 3. Install frontend & Electron dependencies
-
-```powershell
 cd ..
 npm run install-all
 ```
 
----
+## First-Time Setup (macOS)
 
-### 4. Run the app
-
-```powershell
-npm start
-```
-
----
-
-## 🍎 Mac Setup
-
-### 1. Create and activate Python virtual environment
+From project root:
 
 ```bash
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
-```
-
----
-
-### 2. Install backend dependencies
-
-```bash
 pip install -r requirements.txt
 pip install pyinstaller
-```
 
-> If `pip` doesn’t work, try `pip3`
-
----
-
-### 3. Install frontend & Electron dependencies
-
-```bash
 cd ..
 npm run install-all
 ```
 
----
+## Run the App
 
-### 4. Run the app
+From project root:
 
-```bash
-npm start
-```
-
----
-
-# 🔁 Running Again Later
-
-## 🪟 Windows
 ```powershell
-cd backend
-.\.venv\Scripts\Activate.ps1
-cd ..
 npm start
 ```
 
-## 🍎 Mac
-```bash
-cd backend
-source .venv/bin/activate
-cd ..
-npm start
-```
+What npm start does:
 
----
+- Builds backend executable via PyInstaller
+- Builds frontend via Vite
+- Copies frontend build into electron/out
+- Launches Electron app
 
-# 📦 Build Installer (Optional)
+## Build Installer
 
-## 🪟 Windows
+From project root:
+
 ```powershell
 npm run dist
 ```
 
-> If this fails, run PowerShell as Administrator.
+This runs the same build chain and then electron-builder packaging.
 
----
+## Root Scripts
 
-## 🍎 Mac
-```bash
-npm run dist
-```
+Defined in package.json:
 
-> You may need to allow the app in **System Settings → Privacy & Security**
+- install-all
+- build-backend
+- build-frontend
+- copy-frontend
+- start
+- dist
 
----
+## Development Notes
 
-# 📁 Project Structure
+- The active UI runtime uses Vite + React under frontend/src.
+- The repository also contains Next.js scaffold files that are not part of the Electron runtime path.
+- capstone.py is a legacy webcam script; capstoneStat.py is the backend used by packaging and desktop runtime.
 
-```
-Posture-checker/
-├── backend/
-│   ├── capstoneStat.py
-│   ├── requirements.txt
-│   └── .venv/ (created locally)
-├── frontend/
-│   ├── src/
-│   └── dist/ (generated)
-├── electron/
-│   ├── main.js
-│   ├── package.json
-│   └── out/ (generated)
-├── package.json (root scripts)
-└── .gitignore
-```
+## Known Path Caveat
 
----
+When packaged, backend CSV write location may differ from paths Electron currently checks for stats/export.
 
-# 🛠 Troubleshooting
+Electron currently searches:
 
----
+- backend/session_stats.csv
+- backend/dist/session_stats.csv
 
-### ❌ "No module named PyInstaller"
+If packaged runs produce no stats in dashboard/export, verify CSV location used by the bundled backend executable.
 
-#### Windows
+## Troubleshooting
+
+### Backend executable build fails
+
+- Ensure backend venv is activated.
+- Reinstall dependencies:
+
 ```powershell
 cd backend
 .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 pip install pyinstaller
 ```
 
-#### Mac
-```bash
-cd backend
-source .venv/bin/activate
-pip install pyinstaller
-```
+### Blank Electron window
 
----
+- Ensure frontend/dist exists.
+- Ensure frontend build was copied to electron/out.
 
-### ❌ Blank Electron window
-- Ensure `frontend/dist` exists  
-- Ensure files were copied to `electron/out`
+### Camera permission issues
 
----
+- Allow camera permissions for the app/process in OS privacy settings.
+- Close other apps that may hold the camera.
 
-### ❌ Build errors (clean rebuild)
+### Clean rebuild
 
-#### Windows
+Windows:
+
 ```powershell
 Remove-Item backend\dist -Recurse -Force
 Remove-Item frontend\dist -Recurse -Force
 Remove-Item electron\out -Recurse -Force
-
 npm start
 ```
 
-#### Mac
+macOS/Linux:
+
 ```bash
 rm -rf backend/dist
 rm -rf frontend/dist
 rm -rf electron/out
-
 npm start
 ```
 
----
+## Module-Level Documentation
 
-# ✅ Quick Start Summary
-
-## 🪟 Windows
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-pip install pyinstaller
-
-cd ..
-npm run install-all
-npm start
-```
-
----
-
-## 🍎 Mac
-```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-pip install pyinstaller
-
-cd ..
-npm run install-all
-npm start
-```
-
----
-
-# 📌 Notes
-
-- Do NOT commit:
-  - `node_modules/`
-  - `backend/dist/`
-  - `frontend/dist/`
-  - `electron/out/`
-- These are generated automatically when running the app.
+- Backend details: backend/README.md
+- Frontend details: frontend/README.md
+- Electron details: electron/README.md

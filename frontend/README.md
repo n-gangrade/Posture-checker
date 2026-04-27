@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend Documentation
 
-## Getting Started
+This frontend is a React + Vite application embedded inside Electron.
 
-First, run the development server:
+## Stack
 
-```bash
+- React
+- Vite
+- CSS modules by component file convention (plain CSS files)
+
+Main entry points:
+
+- src/main.jsx
+- src/App.jsx
+
+## Navigation and Views
+
+The app uses a sidebar and three main views:
+
+- Home
+- Statistics
+- Settings
+
+Component mapping:
+
+- src/components/Home.jsx
+- src/components/StatsDash.jsx
+- src/components/Settings.jsx
+
+## Backend Dependency
+
+The frontend expects the backend API at:
+
+- http://localhost:8000
+
+Used endpoints include:
+
+- GET /profile
+- POST /profile
+- POST /start-session
+- POST /analyze-frame
+- POST /end-session
+
+## Home Flow
+
+Home handles live posture monitoring:
+
+- Enables webcam via navigator.mediaDevices.getUserMedia.
+- Starts backend session when camera is turned on.
+- Sends frames every 200ms to POST /analyze-frame.
+- Displays posture score, posture label, session time, alert count, and average score.
+- Ends session and camera stream on stop/unmount.
+
+Alert behavior:
+
+- User chooses alert mode: popup, system alert, or none.
+- User chooses delay before local alert trigger.
+- Alerts are sent through Electron IPC bridge (window.electronAPI).
+
+## Statistics Flow
+
+Stats dashboard:
+
+- Fetches session rows via Electron IPC getSessionStats().
+- Optionally filters by current profile user if available.
+- Supports time ranges:
+	- Past Hour
+	- Past Day
+	- Past 7 Days
+	- Past 30 Days
+- Renders an SVG line chart from CSV session history.
+- Supports CSV export through Electron IPC exportSessionData().
+
+## Settings Flow
+
+Settings manages local profile data:
+
+- Loads profile from GET /profile.
+- Saves profile via POST /profile.
+- Requires email for save.
+- Displays profile created timestamp.
+
+## Running Frontend Only (Web)
+
+From frontend:
+
+```powershell
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Important:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Desktop-only features (notifications, stats CSV export, session CSV reading) depend on Electron preload APIs and will show fallback messages in browser-only mode.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Build
 
-## Learn More
+```powershell
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+Build output goes to frontend/dist and is copied to electron/out by root scripts.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- There are leftover Next.js scaffold files in this folder, but the active runtime app path is Vite + React under src.
