@@ -3,6 +3,9 @@ import './Settings.css';
 
 const API_BASE = 'http://localhost:8000';
 
+/**
+ * Settings page component: load and save a simple user profile to backend.
+ */
 function Settings() {
   const [profileData, setProfileData] = useState({
     name: '',
@@ -35,6 +38,7 @@ function Settings() {
     loadProfile();
   }, []);
 
+  /** Validate and POST the current profile to the backend, updating UI state. */
   const handleSaveProfile = async () => {
     const email = profileData.email.trim().toLowerCase();
     if (!email) {

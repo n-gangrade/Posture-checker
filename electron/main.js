@@ -13,6 +13,7 @@ const fs = require("fs");
 let backendProcess;
 let mainWindow;
 
+// Return the first existing candidate path to the backend session CSV file.
 function findSessionCsvPath() {
   const sourceCandidates = [
     path.join(__dirname, "..", "backend", "session_stats.csv"),
@@ -21,6 +22,7 @@ function findSessionCsvPath() {
   return sourceCandidates.find((candidate) => fs.existsSync(candidate));
 }
 
+// Parse a single CSV line into an array of values, handling quoted fields.
 function parseCsvLine(line) {
   const values = [];
   let current = "";
@@ -53,6 +55,7 @@ function parseCsvLine(line) {
   return values;
 }
 
+// Parse full CSV text into an array of row objects using the first line as headers.
 function parseSessionCsv(csvText) {
   const lines = csvText
     .split(/\r?\n/)
@@ -78,6 +81,7 @@ function parseSessionCsv(csvText) {
   return rows;
 }
 
+// Resolve the expected backend binary path for the current platform.
 function getBackendPath() {
   const bin =
     process.platform === "win32" ? "capstoneStat.exe" : "capstoneStat";
@@ -87,6 +91,7 @@ function getBackendPath() {
   return path.join(__dirname, "..", "backend", "dist", bin);
 }
 
+// Spawn the backend binary as a child process.
 function startBackend() {
   backendProcess = spawn(getBackendPath(), [], {
     stdio: "ignore",
@@ -97,6 +102,7 @@ function startBackend() {
   );
 }
 
+// Create the main application BrowserWindow and load the packaged frontend.
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,

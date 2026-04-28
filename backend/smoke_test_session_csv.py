@@ -9,6 +9,10 @@ from pathlib import Path
 
 
 def post_json(url, payload):
+    """POST JSON `payload` to `url` and return the parsed JSON response.
+
+    Raises underlying urllib exceptions on network or HTTP errors.
+    """
     body = json.dumps(payload).encode("utf-8")
     request = urllib.request.Request(
         url,
@@ -21,6 +25,7 @@ def post_json(url, payload):
 
 
 def read_row_count(csv_path):
+    """Return the number of data rows in a CSV file, or 0 if missing/empty."""
     if not csv_path.exists() or csv_path.stat().st_size == 0:
         return 0
 
@@ -29,6 +34,7 @@ def read_row_count(csv_path):
 
 
 def read_last_row(csv_path):
+    """Return the last data row from a CSV file as a dict, or None."""
     with open(csv_path, newline="", encoding="utf-8") as csv_file:
         rows = list(csv.DictReader(csv_file))
     if not rows:
@@ -37,6 +43,7 @@ def read_last_row(csv_path):
 
 
 def main():
+    """Run a smoke test that starts and ends a backend session and verifies CSV output."""
     parser = argparse.ArgumentParser(
         description="Tiny smoke test for backend CSV session persistence.",
     )

@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// Expose a small, safe API to the renderer for notifications and session data.
 contextBridge.exposeInMainWorld('electronAPI', {
   sendNotification: (data) => ipcRenderer.send('send-notification', data),
   sendSystemNotification: (data) => ipcRenderer.send('send-system-notification', data),

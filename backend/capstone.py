@@ -1,3 +1,10 @@
+"""Utilities and entrypoint for the posture-checker webcam tool.
+
+This module provides helper functions to compute simple posture
+metrics from MediaPipe pose landmarks, calibrate a baseline for a
+user, and run the live webcam loop that displays posture feedback.
+"""
+
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -13,6 +20,14 @@ FORWARD_HEAD_THRESHOLD = 0.05  # normalized distance
 
 mp_drawing = mp.solutions.drawing_utils
 def draw_points(frame, landmarks, idxs, radius=6):
+    """Draw circular markers on selected landmark indices.
+
+    Args:
+        frame: BGR image array on which to draw.
+        landmarks: Sequence of normalized landmark objects with `x` and `y`.
+        idxs: Iterable of integer indices indicating which landmarks to draw.
+        radius: Radius of the marker in pixels.
+    """
     h, w = frame.shape[:2]
     for i in idxs:
         lm = landmarks[i]
@@ -25,6 +40,23 @@ from collections import deque
 scores = deque(maxlen=10)
 
 def posture_metrics(landmarks, min_vis=0.6):
+    """Compute simple posture metrics from pose landmarks.
+
+    The function computes a horizontal displacement metric `dx` that
+    approximates forward-head posture by comparing ear midpoint to
+    shoulder midpoint, normalized by shoulder width. It also returns
+    a depth difference `dz` using the z-coordinates of the same points.
+
+    Args:
+        landmarks: Sequence of pose landmarks (indexed by mp_pose.PoseLandmark).
+        min_vis: Minimum visibility threshold; returns None if keypoints
+                 are not confidently detected.
+
+    Returns:
+        Tuple `(dx, dz)` where `dx` is the normalized horizontal displacement
+        and `dz` is the absolute depth difference, or `None` when
+        required landmarks are not visible enough.
+    """
     le = landmarks[mp_pose.PoseLandmark.LEFT_EAR.value]
     re = landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value]
     ls = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value]
@@ -48,6 +80,18 @@ def posture_metrics(landmarks, min_vis=0.6):
     return dx, dz
 
 def posture_zscore(dx, dz, baseline, w_dx=1.0, w_dz=2.0):
+    """Combine standardized posture metrics into a single z-score.
+
+    Args:
+        dx: Horizontal displacement metric from `posture_metrics`.
+        dz: Depth difference metric from `posture_metrics`.
+        baseline: Dict containing `dx_mean`, `dx_std`, `dz_mean`, `dz_std`.
+        w_dx: Weight applied to the standardized `dx` component.
+        w_dz: Weight applied to the standardized `dz` component.
+
+    Returns:
+        Weighted sum of the two standardized components (a float z-score).
+    """
     z_dx = (dx - baseline["dx_mean"]) / baseline["dx_std"]
     z_dz = (dz - baseline["dz_mean"]) / baseline["dz_std"]
     return w_dx * z_dx + w_dz * z_dz
@@ -55,6 +99,14 @@ def posture_zscore(dx, dz, baseline, w_dx=1.0, w_dz=2.0):
 Z_BAD_THRESHOLD = 2.5  # tune
 
 def classify_from_z(z):
+    """Map a combined z-score to a posture label.
+
+    Args:
+        z: Combined posture z-score produced by `posture_zscore`.
+
+    Returns:
+        "BAD" when `z` is above `Z_BAD_THRESHOLD`, otherwise "GOOD".
+    """
     return "BAD" if z > Z_BAD_THRESHOLD else "GOOD"
 
 def calibrate_baseline(cap, seconds=5, fps_assumed=30):
@@ -106,6 +158,13 @@ def calibrate_baseline(cap, seconds=5, fps_assumed=30):
 from collections import deque
 
 def main():
+    """Run the live webcam posture-check loop.
+
+    The function opens the system webcam, performs an initial
+    calibration (ask user to sit with good posture), then continuously
+    reads frames, computes posture metrics, annotates the frame, and
+    displays alerts when slouching is detected.
+    """
     if platform.system() == "Darwin":
         cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
     else:

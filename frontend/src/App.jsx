@@ -4,6 +4,7 @@ import Home from './components/Home';
 import StatsDash from './components/StatsDash';
 import Settings from './components/Settings';
 
+/** Root SPA component that switches between Home, Stats, and Settings pages. */
 function App() {
   const [activeNav, setActiveNav] = useState('home');
 

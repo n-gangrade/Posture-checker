@@ -4,6 +4,10 @@ import './Home.css';
 const API_BASE = 'http://localhost:8000';
 
 const durationOptions = [5/60, 10/60, 20/60, 0.5, 1, 2, 3, 4, 5];
+/**
+ * Format a numeric duration value into a human-friendly string.
+ * Accepts small fractional values used for seconds and larger values for minutes.
+ */
 const formatDuration = (val) => {
   if (val === 5/60) return '5 seconds';
   if (val === 10/60) return '10 seconds';
@@ -12,6 +16,9 @@ const formatDuration = (val) => {
   return `${val} min`;
 };
 
+/**
+ * Home page component: manages camera, session lifecycle, and alerts.
+ */
 function Home() {
   const [cameraOn, setCameraOn] = useState(false);
   const [heightAdjust, setHeightAdjust] = useState(50);
@@ -28,6 +35,7 @@ function Home() {
   const intervalRef = useRef(null);
   const badPostureTimer = useRef(null);
 
+  /** Start camera, begin backend session, and attach stream to video element. */
   const startCamera = async () => {
     try {
       let username = 'anonymous';
@@ -59,6 +67,7 @@ function Home() {
     }
   };
 
+  /** Stop the backend session, clear timers, and stop camera tracks. */
   const stopCamera = async () => {
     try {
       await fetch(`${API_BASE}/end-session`, { method: 'POST' });
@@ -78,6 +87,7 @@ function Home() {
     }
   };
 
+  /** Capture current video frame, send to backend /analyze-frame, and update UI state. */
   const captureAndSendFrame = async () => {
     if (!videoRef.current || !videoRef.current.srcObject) return;
 
@@ -110,12 +120,14 @@ function Home() {
     }
   };
 
+  /** Play an alert audio clip (if available). */
   const playAlertSound = () => {
-  const audio = new Audio('/alert.mp3');
-  audio.play();
-};
+    const audio = new Audio('/alert.mp3');
+    audio.play();
+  };
 
-const sendPostureAlert = () => {
+  /** Send a platform notification based on the configured `warningType`. */
+  const sendPostureAlert = () => {
   if (window.electronAPI) {
     if (warningType === 'popup') {
       window.electronAPI.sendNotification({
@@ -132,7 +144,8 @@ const sendPostureAlert = () => {
   }
 };
 
-const handleTestAlert = () => {
+  /** Trigger a test posture alert notification. */
+  const handleTestAlert = () => {
   if (window.electronAPI) {
     if (warningType === 'popup') {
       window.electronAPI.sendNotification({

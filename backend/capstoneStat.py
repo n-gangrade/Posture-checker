@@ -119,6 +119,15 @@ SESSION_CSV_HEADERS = [
 
 
 def get_session_duration_seconds(start_time, end_time=None):
+    """Return an integer number of seconds between two timestamps.
+
+    Args:
+        start_time: Start timestamp (seconds since epoch).
+        end_time: Optional end timestamp; uses current time if omitted.
+
+    Returns:
+        Non-negative integer number of seconds elapsed.
+    """
     if not start_time:
         return 0
     if end_time is None:
@@ -127,6 +136,17 @@ def get_session_duration_seconds(start_time, end_time=None):
 
 
 def append_session_to_csv(row):
+    """Append a session summary row to the local CSV file.
+
+    Ensures the parent directory exists and writes a header when creating
+    a new file.
+
+    Args:
+        row: Dict mapping `SESSION_CSV_HEADERS` to values.
+
+    Returns:
+        Tuple (success: bool, error_message_or_None).
+    """
     SESSION_CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
     should_write_header = (
         not SESSION_CSV_PATH.exists() or SESSION_CSV_PATH.stat().st_size == 0
@@ -144,6 +164,11 @@ def append_session_to_csv(row):
 
 
 def load_user_profile():
+    """Load a saved user profile from disk, or return None.
+
+    Returns:
+        Dict profile data or None when not present or unreadable.
+    """
     if not USER_PROFILE_PATH.exists() or USER_PROFILE_PATH.stat().st_size == 0:
         return None
 
@@ -155,6 +180,10 @@ def load_user_profile():
 
 
 def save_user_profile(name, email):
+    """Save a simple user profile (name and email) to disk.
+
+    Returns the saved profile dict.
+    """
     existing_profile = load_user_profile() or {}
     created_at = existing_profile.get("created_at")
     if not created_at:
@@ -176,7 +205,14 @@ def save_user_profile(name, email):
 # POSTURE LOGIC
 # -----------------------------
 def get_landmarks(frame):
-    """Run landmarker on one BGR frame, return landmark list or None."""
+    """Detect pose landmarks in a BGR `frame` using the MediaPipe landmarker.
+
+    Args:
+        frame: BGR image (numpy array) as produced by OpenCV.
+
+    Returns:
+        Sequence of landmarks for the first detected person, or None.
+    """
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
     result = landmarker.detect(mp_image)
@@ -185,6 +221,11 @@ def get_landmarks(frame):
     return None
 
 def posture_metrics(landmarks, min_vis=0.45):
+    """Compute posture metrics (dx, dz) from landmark coordinates.
+
+    See `capstone.posture_metrics` for a similar implementation. Returns
+    `None` when landmarks are not confidently visible.
+    """
     le = landmarks[LEFT_EAR]
     re = landmarks[RIGHT_EAR]
     ls = landmarks[LEFT_SHOULDER]
@@ -205,14 +246,33 @@ def posture_metrics(landmarks, min_vis=0.45):
     return dx, dz
 
 def posture_zscore(dx, dz, baseline, w_dx=1.0, w_dz=2.0):
+    """Compute a weighted z-score combining horizontal and depth metrics.
+
+    Args:
+        dx: Horizontal displacement metric.
+        dz: Depth difference metric.
+        baseline: Dict with mean/std for dx and dz.
+
+    Returns:
+        Float combined z-score.
+    """
     z_dx = (dx - baseline["dx_mean"]) / baseline["dx_std"]
     z_dz = (dz - baseline["dz_mean"]) / baseline["dz_std"]
     return w_dx * z_dx + w_dz * z_dz
 
 def classify_from_z(z):
+    """Return posture label string based on z-score threshold."""
     return "BAD" if z > Z_BAD_THRESHOLD else "GOOD"
 
 def decode_base64_image(data_url: str):
+    """Decode a base64 data URL or raw base64 string into a BGR image.
+
+    Args:
+        data_url: Base64 image string, optionally prefixed with a data URL.
+
+    Returns:
+        OpenCV BGR image (numpy array) or None on failure.
+    """
     if "," in data_url:
         _, encoded = data_url.split(",", 1)
     else:
@@ -222,6 +282,10 @@ def decode_base64_image(data_url: str):
     return cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
 def compute_score(good_frames, bad_frames):
+    """Compute a percentage score of good frames over tracked frames.
+
+    Returns 0 when no frames have been tracked yet.
+    """
     tracked = good_frames + bad_frames
     if tracked == 0:
         return 0
@@ -229,9 +293,11 @@ def compute_score(good_frames, bad_frames):
 
 
 def compute_session_average_posture_score(good_frames, bad_frames):
+    """Alias for `compute_score` kept for clarity in session context."""
     return compute_score(good_frames, bad_frames)
 
 def get_session_time_string(start_time):
+    """Return a human-friendly elapsed time string (e.g., '1h 5m' or '12m')."""
     if not start_time:
         return "0m"
     elapsed = int(time.time() - start_time)
@@ -246,16 +312,22 @@ def get_session_time_string(start_time):
 # -----------------------------
 @app.get("/")
 def root():
+    """Health endpoint: simple readiness message."""
     return {"message": "Posture backend is running"}
 
 
 @app.get("/profile")
 def get_profile():
+    """Return the saved user profile or null if none exists."""
     return {"profile": load_user_profile()}
 
 
 @app.post("/profile")
 def upsert_profile(payload: UserProfileRequest):
+    """Create or update a local user profile from the request payload.
+
+    Validates that `email` is provided and returns the saved profile.
+    """
     name = payload.name.strip()
     email = payload.email.strip().lower()
 
@@ -270,6 +342,10 @@ def upsert_profile(payload: UserProfileRequest):
 
 @app.post("/start-session")
 def start_session(payload: Optional[StartSessionRequest] = None):
+    """Begin a new session and start calibration state for incoming frames.
+
+    Returns session metadata including `session_id`.
+    """
     username = "anonymous"
     if payload:
         candidate = ""
@@ -304,6 +380,7 @@ def start_session(payload: Optional[StartSessionRequest] = None):
 
 @app.post("/end-session")
 def end_session():
+    """End the current session, persist summary to CSV, and return a summary."""
     if not current_session["running"]:
         return {"message": "No active session"}
 
@@ -358,6 +435,7 @@ def end_session():
 
 @app.get("/status")
 def get_status():
+    """Return current session status and aggregated counters for UI polling."""
     posture_score = compute_score(
         current_session["good_frames"],
         current_session["bad_frames"]
@@ -380,6 +458,11 @@ def get_status():
 
 @app.post("/analyze-frame")
 def analyze_frame(payload: FrameRequest):
+    """Analyze a base64-encoded image frame and update session metrics.
+
+    Expects `payload.image` to be a base64 data URL. Returns a JSON summary
+    including `posture_label`, `posture_score`, and session timing info.
+    """
     if not current_session["running"]:
         return {
             "posture_label": "SESSION NOT STARTED",

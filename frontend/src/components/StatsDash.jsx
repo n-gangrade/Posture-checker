@@ -9,12 +9,14 @@ const RANGE_MS = {
   "Past 30 Days": 30 * 24 * 60 * 60 * 1000,
 };
 
+/** Normalize a possible string to lower-case for comparisons. */
 function toLower(value) {
   return String(value || "")
     .trim()
     .toLowerCase();
 }
 
+/** Return true when `timestamp` falls within the selected named time range. */
 function withinRange(timestamp, selectedTimeRange) {
   const rangeMs = RANGE_MS[selectedTimeRange];
   if (!rangeMs) {
@@ -29,6 +31,7 @@ function withinRange(timestamp, selectedTimeRange) {
   return ms <= rangeMs;
 }
 
+/** Return {start, end} ms window for a selected named time range. */
 function getRangeWindow(selectedTimeRange, now = Date.now()) {
   const rangeMs = RANGE_MS[selectedTimeRange];
   if (!rangeMs) {
@@ -41,6 +44,7 @@ function getRangeWindow(selectedTimeRange, now = Date.now()) {
   };
 }
 
+/** Format an axis label for a given timestamp depending on range granularity. */
 function formatAxisBoundary(timestamp, selectedTimeRange) {
   const date = new Date(timestamp);
 
@@ -67,6 +71,7 @@ function formatAxisBoundary(timestamp, selectedTimeRange) {
   });
 }
 
+/** Human-readable X-axis label for the selected time range. */
 function getXAxisLabel(selectedTimeRange) {
   if (selectedTimeRange === "Past Hour") {
     return "Session Time (Last Hour)";
@@ -83,6 +88,9 @@ function getXAxisLabel(selectedTimeRange) {
   return "Session Time";
 }
 
+/**
+ * Statistics dashboard component — renders session posture scores over time.
+ */
 function StatsDash() {
   const [selectedTimeRange, setSelectedTimeRange] = useState("Past Hour");
   const [exportMessage, setExportMessage] = useState("");
@@ -234,6 +242,7 @@ function StatsDash() {
     };
   }, [filteredSessions, selectedTimeRange]);
 
+  /** Ask the desktop host to export session data to disk (desktop only). */
   const handleExport = async () => {
     if (!window.electronAPI?.exportSessionData) {
       setExportMessage("Export is only available in the desktop app.");
